@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace STRATFY.Models;
 
 public partial class Extrato
 {
+    [Key]
     public int Id { get; set; }
 
     public int UsuarioId { get; set; }
