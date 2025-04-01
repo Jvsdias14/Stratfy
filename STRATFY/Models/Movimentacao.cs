@@ -19,7 +19,7 @@ public partial class Movimentacao
 
     public DateOnly DataMovimentacao { get; set; }
 
-    public virtual Categorium Categoria { get; set; } = null!;
+    public virtual Categoria Categoria { get; set; } = null!;
 
     public virtual Extrato Extrato { get; set; } = null!;
 }

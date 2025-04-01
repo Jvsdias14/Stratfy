@@ -11,7 +11,7 @@ public partial class Dashboard
 
     public string Descricao { get; set; } = null!;
 
-    public virtual ICollection<Carto> Cartos { get; set; } = new List<Carto>();
+    public virtual ICollection<Cartao> Cartoes { get; set; } = new List<Cartao>();
 
     public virtual Extrato Extrato { get; set; } = null!;
 

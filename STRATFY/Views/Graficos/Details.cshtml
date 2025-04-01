@@ -1,0 +1,60 @@
+﻿@model STRATFY.Models.Grafico
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Grafico</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Titulo)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Titulo)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Tipo)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Tipo)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Campo1)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Campo1)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Campo2)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Campo2)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Cor)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Cor)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.AtivarLegenda)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.AtivarLegenda)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Dashboard)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Dashboard.Id)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

@@ -1,7 +1,16 @@
+using Microsoft.EntityFrameworkCore;
+using STRATFY.Interfaces;
+using STRATFY.Models;
+using STRATFY.Repositories;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped(typeof(IRepositoryBase<>), typeof(RepositoryBase<>));
 
 var app = builder.Build();
 

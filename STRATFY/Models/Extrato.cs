@@ -15,9 +15,10 @@ public partial class Extrato
 
     public DateOnly DataCriacao { get; set; }
 
-    public virtual ICollection<Dashboard> Dashboards { get; set; } = new List<Dashboard>();
+    public virtual ICollection<Dashboard> ?Dashboards { get; set; }
 
-    public virtual ICollection<Movimentacao> Movimentacaos { get; set; } = new List<Movimentacao>();
 
-    public virtual Usuario Usuario { get; set; } = null!;
+    public virtual ICollection<Movimentacao> ?Movimentacaos { get; set; } 
+
+    public virtual Usuario? Usuario { get; set; } 
 }

@@ -10,7 +10,7 @@ namespace STRATFY.Repositories
         public bool saveChanges = true;
         DbSet<T> _dbSet;
 
-        public RepositoryBase(AppDbContext context, bool pSaveChanges)
+        public RepositoryBase(AppDbContext context, bool pSaveChanges = true)
         {
             contexto = context;
             saveChanges = pSaveChanges;

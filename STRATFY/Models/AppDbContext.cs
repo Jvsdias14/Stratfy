@@ -15,9 +15,9 @@ public partial class AppDbContext : DbContext
     {
     }
 
-    public virtual DbSet<Carto> Cartoes { get; set; }
+    public virtual DbSet<Cartao> Cartoes { get; set; }
 
-    public virtual DbSet<Categorium> Categoria { get; set; }
+    public virtual DbSet<Categoria> Categoria { get; set; }
 
     public virtual DbSet<Dashboard> Dashboards { get; set; }
 
@@ -35,7 +35,7 @@ public partial class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Carto>(entity =>
+        modelBuilder.Entity<Cartao>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Cartoes__3213E83F7BE4EBD1");
 
@@ -54,13 +54,13 @@ public partial class AppDbContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false);
 
-            entity.HasOne(d => d.Dashboard).WithMany(p => p.Cartos)
+            entity.HasOne(d => d.Dashboard).WithMany(p => p.Cartoes)
                 .HasForeignKey(d => d.DashboardId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Cartoes__Dashboa__59FA5E80");
         });
 
-        modelBuilder.Entity<Categorium>(entity =>
+        modelBuilder.Entity<Categoria>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Categori__3213E83F944552C4");
 
@@ -98,12 +98,16 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Nome)
                 .HasMaxLength(255)
                 .IsUnicode(false);
+            entity.Property(e => e.DataCriacao)
+                .HasColumnType("date");
+                //.HasDefaultValueSql("GETDATE()");
             entity.Property(e => e.UsuarioId).HasColumnName("Usuario_id");
 
             entity.HasOne(d => d.Usuario).WithMany(p => p.Extratos)
                 .HasForeignKey(d => d.UsuarioId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Extrato__Usuario__4D94879B");
+            
         });
 
         modelBuilder.Entity<Grafico>(entity =>
