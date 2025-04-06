@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using STRATFY.Models;
 using STRATFY.Interfaces;
 using Microsoft.VisualBasic;
+using Microsoft.AspNetCore.Authorization;
 
 namespace STRATFY.Controllers
 {
+    [Authorize]
     public class ExtratosController : Controller
     {
         private readonly AppDbContext _context;

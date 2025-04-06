@@ -38,6 +38,9 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Movimentacoes" asp-action="Index">Movimentações</a>
                         </li>
                     </ul>
+                    <form asp-controller="Login" asp-action="Logout" method="post" class="d-inline">
+                        <button type="submit" class="nav-link btn btn-link text-dark" style="text-decoration: none;">Sair</button>
+                    </form>
                 </div>
             </div>
         </nav>
