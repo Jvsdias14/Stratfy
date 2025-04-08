@@ -12,13 +12,13 @@ public partial class Movimentacao
 
     [Required]
     [ForeignKey("Extrato")]
-    public int? ExtratoId { get; set; }
-    public virtual Extrato Extrato { get; set; } = null!;
+    public int ExtratoId { get; set; }
+    public virtual Extrato ?Extrato { get; set; }
 
     [Required]
     [ForeignKey("Categoria")]
-    public int? CategoriaId { get; set; }
-    public virtual Categoria Categoria { get; set; } = null!;
+    public int CategoriaId { get; set; }
+    public virtual Categoria ?Categoria { get; set; }
 
     public string? Descricao { get; set; }
 

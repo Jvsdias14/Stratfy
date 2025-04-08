@@ -49,10 +49,10 @@
                 @Html.DisplayFor(modelItem => item.DataMovimentacao)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Categoria.Id)
+                @Html.DisplayFor(modelItem => item.Categoria.Nome)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Extrato.Id)
+                @Html.DisplayFor(modelItem => item.Extrato.Nome)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

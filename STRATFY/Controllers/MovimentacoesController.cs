@@ -50,9 +50,9 @@ namespace STRATFY.Controllers
         // GET: Movimentacaos/Create
         public IActionResult Create()
         {
-            ViewData["CategoriaId"] = new SelectList(_context.Categoria, "Id", "Id");
-            ViewData["ExtratoId"] = new SelectList(_context.Extratos, "Id", "Id");
-            return View();
+            ViewData["CategoriaId"] = new SelectList(_context.Categoria.ToList(), "Id", "Nome");
+            ViewData["ExtratoId"] = new SelectList(_context.Extratos.ToList(), "Id", "Nome");
+            return View(new Movimentacao());
         }
 
         // POST: Movimentacaos/Create
@@ -62,14 +62,16 @@ namespace STRATFY.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,ExtratoId,CategoriaId,Descricao,Tipo,Valor,DataMovimentacao")] Movimentacao movimentacao)
         {
-            ViewData["CategoriaId"] = new SelectList(_context.Categoria, "Id", "Id", movimentacao.CategoriaId);
-            ViewData["ExtratoId"] = new SelectList(_context.Extratos, "Id", "Id", movimentacao.ExtratoId);
+            //ViewData["CategoriaId"] = new SelectList(_context.Categoria, "Id", "Id", movimentacao.CategoriaId);
+            //ViewData["ExtratoId"] = new SelectList(_context.Extratos, "Id", "Id", movimentacao.ExtratoId);
             if (ModelState.IsValid)
             {
                 _context.Add(movimentacao);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["CategoriaId"] = new SelectList(_context.Categoria.ToList(), "Id", "Nome");
+            ViewData["ExtratoId"] = new SelectList(_context.Extratos.ToList(), "Id", "Nome");
             return View(movimentacao);
         }
 
@@ -86,8 +88,8 @@ namespace STRATFY.Controllers
             {
                 return NotFound();
             }
-            ViewData["CategoriaId"] = new SelectList(_context.Categoria, "Id", "Id", movimentacao.CategoriaId);
-            ViewData["ExtratoId"] = new SelectList(_context.Extratos, "Id", "Id", movimentacao.ExtratoId);
+            ViewData["CategoriaId"] = new SelectList(_context.Categoria.ToList(), "Id", "Nome");
+            ViewData["ExtratoId"] = new SelectList(_context.Extratos.ToList(), "Id", "Nome");
             return View(movimentacao);
         }
 
@@ -123,8 +125,8 @@ namespace STRATFY.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoriaId"] = new SelectList(_context.Categoria, "Id", "Id", movimentacao.CategoriaId);
-            ViewData["ExtratoId"] = new SelectList(_context.Extratos, "Id", "Id", movimentacao.ExtratoId);
+            ViewData["CategoriaId"] = new SelectList(_context.Categoria.ToList(), "Id", "Nome");
+            ViewData["ExtratoId"] = new SelectList(_context.Extratos.ToList(), "Id", "Nome");
             return View(movimentacao);
         }
 
