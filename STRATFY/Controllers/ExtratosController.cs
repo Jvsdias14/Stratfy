@@ -67,7 +67,7 @@ namespace STRATFY.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("id,UsuarioId,Nome,DataCriacao")] Extrato extrato)
         {
-            ModelState.Remove("Usuario");
+            ModelState.Remove("Usuario"); //não entendi essa parte - gabriel
             
             if (ModelState.IsValid)
             {
@@ -77,8 +77,8 @@ namespace STRATFY.Controllers
                 //_context.Add(extrato);
                 //await _context.SaveChangesAsync();
                 //return RedirectToAction(nameof(Index));
+                await _extratoRepository.IncluirAsync(extrato);
                 return RedirectToAction("Create", "Movimentacoes", new { extratoId = extrato.Id });
-                _extratoRepository.IncluirAsync(extrato);
             }
             //ViewData["UsuarioId"] = new SelectList(_context.Usuarios, "Id", "Id", extrato.UsuarioId);
             ViewData["UsuarioId"] = _extratoRepository.SelecionarChaveAsync(extrato.UsuarioId);
@@ -113,6 +113,7 @@ namespace STRATFY.Controllers
             {
                 try
                 {
+                    extrato.DataCriacao = DateOnly.FromDateTime(DateTime.Now);
                     _context.Update(extrato);
                     await _context.SaveChangesAsync();
                 }

@@ -62,14 +62,14 @@ namespace STRATFY.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,ExtratoId,CategoriaId,Descricao,Tipo,Valor,DataMovimentacao")] Movimentacao movimentacao)
         {
+            ViewData["CategoriaId"] = new SelectList(_context.Categoria, "Id", "Id", movimentacao.CategoriaId);
+            ViewData["ExtratoId"] = new SelectList(_context.Extratos, "Id", "Id", movimentacao.ExtratoId);
             if (ModelState.IsValid)
             {
                 _context.Add(movimentacao);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoriaId"] = new SelectList(_context.Categoria, "Id", "Id", movimentacao.CategoriaId);
-            ViewData["ExtratoId"] = new SelectList(_context.Extratos, "Id", "Id", movimentacao.ExtratoId);
             return View(movimentacao);
         }
 

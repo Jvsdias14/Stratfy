@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace STRATFY.Models;
 
@@ -7,9 +10,15 @@ public partial class Movimentacao
 {
     public int Id { get; set; }
 
-    public int ExtratoId { get; set; }
+    [Required]
+    [ForeignKey("Extrato")]
+    public int? ExtratoId { get; set; }
+    public virtual Extrato Extrato { get; set; } = null!;
 
-    public int CategoriaId { get; set; }
+    [Required]
+    [ForeignKey("Categoria")]
+    public int? CategoriaId { get; set; }
+    public virtual Categoria Categoria { get; set; } = null!;
 
     public string? Descricao { get; set; }
 
@@ -19,7 +28,5 @@ public partial class Movimentacao
 
     public DateOnly DataMovimentacao { get; set; }
 
-    public virtual Categoria Categoria { get; set; } = null!;
 
-    public virtual Extrato Extrato { get; set; } = null!;
 }
