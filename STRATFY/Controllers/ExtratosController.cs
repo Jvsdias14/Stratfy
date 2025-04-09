@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace STRATFY.Controllers
 {
-    [Authorize]
+    //[Authorize]
     public class ExtratosController : Controller
     {
         private readonly AppDbContext _context;
@@ -60,27 +60,18 @@ namespace STRATFY.Controllers
             return View();
         }
 
-        // POST: Extratos/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+  
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("id,UsuarioId,Nome,DataCriacao")] Extrato extrato)
         {
-            ModelState.Remove("Usuario"); //não entendi essa parte - gabriel
-            
+            ModelState.Remove("Usuario");
             if (ModelState.IsValid)
             {
-                //Usuario usuario = await _context.Usuarios.FindAsync(extrato.UsuarioId);
-                //extrato.Usuario = usuario;
                 extrato.DataCriacao = DateOnly.FromDateTime(DateTime.Now);
-                //_context.Add(extrato);
-                //await _context.SaveChangesAsync();
-                //return RedirectToAction(nameof(Index));
                 await _extratoRepository.IncluirAsync(extrato);
-                return RedirectToAction("Create", "Movimentacoes", new { extratoId = extrato.Id });
+                return RedirectToAction("Create", "Movimentacoes", extrato);
             }
-            //ViewData["UsuarioId"] = new SelectList(_context.Usuarios, "Id", "Id", extrato.UsuarioId);
             ViewData["UsuarioId"] = _extratoRepository.SelecionarChaveAsync(extrato.UsuarioId);
             return View(extrato);
         }

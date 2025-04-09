@@ -13,8 +13,8 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="ExtratoId" class="control-label"></label>
-                <select asp-for="ExtratoId" class="form-control" asp-items="ViewBag.ExtratoId"></select>
+                <label asp-for="Extrato" class="control-label"></label>
+                <input asp-for="Extrato" class="form-control" readonly value="@(ViewBag.NomeExtrato)" />
             </div>
             <div class="form-group">
                 <label asp-for="CategoriaId" class="control-label"></label>
@@ -37,12 +37,13 @@
             </div>
             <div class="form-group">
                 <label asp-for="DataMovimentacao" class="control-label"></label>
-                <input asp-for="DataMovimentacao" class="form-control" />
+                <input asp-for="DataMovimentacao" type="date" class="form-control" />
                 <span asp-validation-for="DataMovimentacao" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
+            <input type="hidden" asp-for="ExtratoId" />
         </form>
     </div>
 </div>
@@ -53,4 +54,16 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/jquery.validate.unobtrusive.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/localization/messages_pt_BR.min.js"></script>
+    <script>
+        // Isso faz a validação aceitar vírgula como separador decimal
+        $.validator.methods.number = function (value, element) {
+            value = value.replace(",", ".");
+            return this.optional(element) || !isNaN(value);
+        };
+    </script>
+
 }

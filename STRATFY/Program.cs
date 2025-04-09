@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using STRATFY.Interfaces;
 using STRATFY.Models;
 using STRATFY.Repositories;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped(typeof(IRepositoryBase<>), typeof(RepositoryBase<>));
 builder.Services.AddScoped<RepositoryLogin>();
 
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -32,6 +35,9 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("pt-BR");
+CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("pt-BR");
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

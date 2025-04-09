@@ -8,6 +8,7 @@ namespace STRATFY.Models;
 
 public partial class Movimentacao
 {
+    [Key]
     public int Id { get; set; }
 
     [Required]
@@ -26,7 +27,7 @@ public partial class Movimentacao
 
     public decimal Valor { get; set; }
 
-    public DateOnly DataMovimentacao { get; set; }
+    public DateOnly DataMovimentacao { get; set; } = DateOnly.FromDateTime(DateTime.Now);
 
 
 }

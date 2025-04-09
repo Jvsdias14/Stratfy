@@ -6,18 +6,21 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using STRATFY.Interfaces;
 using STRATFY.Models;
 
 namespace STRATFY.Controllers
 {
-    [Authorize]
+    //[Authorize]
     public class MovimentacoesController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IRepositoryBase<Movimentacao> _movimentacaoRepository;
 
-        public MovimentacoesController(AppDbContext context)
+        public MovimentacoesController(AppDbContext context, IRepositoryBase<Movimentacao> movimentacaoRepository)
         {
             _context = context;
+            _movimentacaoRepository = movimentacaoRepository;
         }
 
         // GET: Movimentacaos
@@ -48,11 +51,17 @@ namespace STRATFY.Controllers
         }
 
         // GET: Movimentacaos/Create
-        public IActionResult Create()
+        public IActionResult Create(Extrato extrato)
         {
             ViewData["CategoriaId"] = new SelectList(_context.Categoria.ToList(), "Id", "Nome");
-            ViewData["ExtratoId"] = new SelectList(_context.Extratos.ToList(), "Id", "Nome");
-            return View(new Movimentacao());
+            ViewData["NomeExtrato"] = extrato.Nome;
+
+            var movimentacao = new Movimentacao
+            {
+                ExtratoId = extrato.Id
+            };
+            
+            return View(movimentacao);
         }
 
         // POST: Movimentacaos/Create
@@ -60,10 +69,8 @@ namespace STRATFY.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,ExtratoId,CategoriaId,Descricao,Tipo,Valor,DataMovimentacao")] Movimentacao movimentacao)
+        public async Task<IActionResult> Create([Bind("ExtratoId,CategoriaId,Descricao,Tipo,Valor,DataMovimentacao")] Movimentacao movimentacao)
         {
-            //ViewData["CategoriaId"] = new SelectList(_context.Categoria, "Id", "Id", movimentacao.CategoriaId);
-            //ViewData["ExtratoId"] = new SelectList(_context.Extratos, "Id", "Id", movimentacao.ExtratoId);
             if (ModelState.IsValid)
             {
                 _context.Add(movimentacao);
