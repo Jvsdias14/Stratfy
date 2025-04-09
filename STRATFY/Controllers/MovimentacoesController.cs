@@ -51,36 +51,75 @@ namespace STRATFY.Controllers
         }
 
         // GET: Movimentacaos/Create
+        //public IActionResult Create(Extrato extrato)
+        //{
+        //    ViewData["CategoriaId"] = new SelectList(_context.Categoria.ToList(), "Id", "Nome");
+        //    ViewData["NomeExtrato"] = extrato.Nome;
+
+        //    var movimentacao = new Movimentacao
+        //    {
+        //        ExtratoId = extrato.Id
+        //    };
+
+        //    return View(movimentacao);
+        //}
+
         public IActionResult Create(Extrato extrato)
         {
-            ViewData["CategoriaId"] = new SelectList(_context.Categoria.ToList(), "Id", "Nome");
-            ViewData["NomeExtrato"] = extrato.Nome;
-
-            var movimentacao = new Movimentacao
+            var model = new MovimentacaoLoteViewModel
             {
-                ExtratoId = extrato.Id
+                ExtratoId = extrato.Id,
+                NomeExtrato = extrato.Nome,
+                Movimentacoes = new List<Movimentacao>
+                {
+                    new Movimentacao() // Começa com uma linha vazia
+                }
             };
-            
-            return View(movimentacao);
+
+            ViewData["CategoriaId"] = new SelectList(_context.Categoria.ToList(), "Id", "Nome");
+
+            return View(model);
         }
+
 
         // POST: Movimentacaos/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> Create([Bind("ExtratoId,CategoriaId,Descricao,Tipo,Valor,DataMovimentacao")] Movimentacao movimentacao)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        _context.Add(movimentacao);
+        //        await _context.SaveChangesAsync();
+        //        return RedirectToAction(nameof(Index));
+        //    }
+        //    ViewData["CategoriaId"] = new SelectList(_context.Categoria.ToList(), "Id", "Nome");
+        //    ViewData["ExtratoId"] = new SelectList(_context.Extratos.ToList(), "Id", "Nome");
+        //    return View(movimentacao);
+        //}
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ExtratoId,CategoriaId,Descricao,Tipo,Valor,DataMovimentacao")] Movimentacao movimentacao)
+        public async Task<IActionResult> Create(MovimentacaoLoteViewModel model)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(movimentacao);
+                foreach (var mov in model.Movimentacoes)
+                {
+                    mov.ExtratoId = model.ExtratoId;
+                    _context.Movimentacaos.Add(mov);
+                }
+
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["CategoriaId"] = new SelectList(_context.Categoria.ToList(), "Id", "Nome");
-            ViewData["ExtratoId"] = new SelectList(_context.Extratos.ToList(), "Id", "Nome");
-            return View(movimentacao);
+            return View(model);
         }
+
 
         // GET: Movimentacaos/Edit/5
         public async Task<IActionResult> Edit(int? id)

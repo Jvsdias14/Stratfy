@@ -150,13 +150,21 @@ namespace STRATFY.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var extrato = await _context.Extratos.FindAsync(id);
-            if (extrato != null)
+            try
             {
-                _context.Extratos.Remove(extrato);
-            }
+                if (extrato != null)
+                {
+                    _context.Extratos.Remove(extrato);
+                    await _context.SaveChangesAsync();
+                }
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                TempData["DeleteError"] = "Não foi possível excluir o extrato porque ele possui movimentações vinculadas.";
+                return RedirectToAction(nameof(Delete), new { id }); // Redireciona de volta pra tela de confirmação de delete
+            }
         }
 
         private bool ExtratoExists(int id)

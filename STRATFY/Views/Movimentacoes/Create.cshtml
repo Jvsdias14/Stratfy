@@ -1,4 +1,111 @@
-﻿@model STRATFY.Models.Movimentacao
+﻿@model STRATFY.Models.MovimentacaoLoteViewModel
+
+@{
+    ViewData["Title"] = "Cadastrar Movimentações";
+    var categorias = (SelectList)ViewData["CategoriaId"];
+}
+
+<h2>Cadastrar Movimentações para o Extrato: @Model.NomeExtrato</h2>
+<hr />
+
+<form asp-action="Create" method="post">
+    <input type="hidden" asp-for="ExtratoId" />
+    <input type="hidden" asp-for="NomeExtrato" />
+
+    <table class="table table-bordered" id="tabela-movimentacoes">
+        <thead>
+            <tr>
+                <th>Categoria</th>
+                <th>Descrição</th>
+                <th>Tipo</th>
+                <th>Valor</th>
+                <th>Data</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Movimentacoes.Count; i++)
+            {
+                <tr>
+                    <td>
+                        <select name="Movimentacoes[@i].CategoriaId" class="form-control">
+                            @foreach (var item in categorias)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </td>
+                    <td>
+                        <input name="Movimentacoes[@i].Descricao" class="form-control" />
+                    </td>
+                    <td>
+                        <input name="Movimentacoes[@i].Tipo" class="form-control" />
+                    </td>
+                    <td>
+                        <input name="Movimentacoes[@i].Valor" class="form-control" />
+                    </td>
+                    <td>
+                        <input name="Movimentacoes[@i].DataMovimentacao" type="date" class="form-control" />
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">Remover</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button type="button" class="btn btn-secondary" onclick="adicionarLinha()">Adicionar Linha</button>
+    <button type="submit" class="btn btn-primary">Salvar Movimentações</button>
+</form>
+
+@section Scripts {
+    <script>
+        function adicionarLinha() {
+            const tabela = document.querySelector("#tabela-movimentacoes tbody");
+            const index = tabela.rows.length;
+
+            const novaLinha = `
+                <tr>
+                    <td>
+                        <select name="Movimentacoes[${index}].CategoriaId" class="form-control">
+        @foreach (var item in categorias)
+        {
+            <text>
+                                        <option value="@item.Value">@item.Text</option>
+            </text>
+        }
+                        </select>
+                    </td>
+                    <td><input name="Movimentacoes[${index}].Descricao" class="form-control" /></td>
+                    <td><input name="Movimentacoes[${index}].Tipo" class="form-control" /></td>
+                    <td><input name="Movimentacoes[${index}].Valor" class="form-control" /></td>
+                    <td><input name="Movimentacoes[${index}].DataMovimentacao" type="date" class="form-control" /></td>
+                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">Remover</button></td>
+                </tr>
+            `;
+
+            tabela.insertAdjacentHTML('beforeend', novaLinha);
+        }
+
+        function removerLinha(botao) {
+            const linha = botao.closest('tr');
+            linha.remove();
+        }
+    </script>
+}
+
+
+
+
+
+
+
+
+
+
+
+@* @model STRATFY.Models.Movimentacao
 
 @{
     ViewData["Title"] = "Create";
@@ -66,4 +173,5 @@
         };
     </script>
 
-}
+}*@
+

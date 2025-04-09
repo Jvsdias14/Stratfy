@@ -1,5 +1,12 @@
 ﻿@model STRATFY.Models.Extrato
 
+@if (TempData["DeleteError"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["DeleteError"]
+    </div>
+}
+
 @{
     ViewData["Title"] = "Delete";
 }
