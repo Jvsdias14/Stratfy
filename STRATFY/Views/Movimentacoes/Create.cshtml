@@ -3,6 +3,13 @@
 @{
     ViewData["Title"] = "Cadastrar Movimentações";
     var categorias = (SelectList)ViewData["CategoriaId"];
+    var tipos = new List<SelectListItem>
+{
+    new SelectListItem { Value = "Débito", Text = "Débito" },
+    new SelectListItem { Value = "Crédito", Text = "Crédito" },
+    new SelectListItem { Value = "Dinheiro", Text = "Dinheiro" },
+    new SelectListItem { Value = "Pix", Text = "Pix" }
+};
 }
 
 <h2>Cadastrar Movimentações para o Extrato: @Model.NomeExtrato</h2>
@@ -39,7 +46,12 @@
                         <input name="Movimentacoes[@i].Descricao" class="form-control" />
                     </td>
                     <td>
-                        <input name="Movimentacoes[@i].Tipo" class="form-control" />
+                        <select name="Movimentacoes[@i].Tipo" class="form-control">
+                            @foreach (var item in tipos)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
                     </td>
                     <td>
                         <input name="Movimentacoes[@i].Valor" class="form-control" />
@@ -78,7 +90,15 @@
                         </select>
                     </td>
                     <td><input name="Movimentacoes[${index}].Descricao" class="form-control" /></td>
-                    <td><input name="Movimentacoes[${index}].Tipo" class="form-control" /></td>
+                            <td>
+                                <select name="Movimentacoes[${index}].Tipo" class="form-control">
+                                    <option value="Débito">Débito</option>
+                                    <option value="Crédito">Crédito</option>
+                                    <option value="Dinheiro">Dinheiro</option>
+                                    <option value="Pix">Pix</option>
+                                </select>
+                            </td>
+
                     <td><input name="Movimentacoes[${index}].Valor" class="form-control" /></td>
                     <td><input name="Movimentacoes[${index}].DataMovimentacao" type="date" class="form-control" /></td>
                     <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">Remover</button></td>

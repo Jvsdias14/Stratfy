@@ -11,7 +11,6 @@ public partial class Movimentacao
     [Key]
     public int Id { get; set; }
 
-    [Required]
     [ForeignKey("Extrato")]
     public int ExtratoId { get; set; }
     public virtual Extrato ?Extrato { get; set; }

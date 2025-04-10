@@ -21,7 +21,9 @@ public partial class Extrato
 
     public virtual ICollection<Dashboard> ?Dashboards { get; set; }
 
+    //public virtual ICollection<Movimentacao> ?Movimentacaos { get; set; }
 
-    public virtual ICollection<Movimentacao> ?Movimentacaos { get; set; } 
+    public virtual ICollection<Movimentacao> Movimentacaos { get; set; } = new List<Movimentacao>();
+
 
 }

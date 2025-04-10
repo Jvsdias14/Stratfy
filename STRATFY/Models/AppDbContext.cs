@@ -56,7 +56,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.Dashboard).WithMany(p => p.Cartoes)
                 .HasForeignKey(d => d.DashboardId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Cartoes__Dashboa__59FA5E80");
         });
 
@@ -84,7 +84,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.Extrato).WithMany(p => p.Dashboards)
                 .HasForeignKey(d => d.ExtratoId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Dashboard__Extra__5070F446");
         });
 
@@ -134,7 +134,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.Dashboard).WithMany(p => p.Graficos)
                 .HasForeignKey(d => d.DashboardId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Graficos__Dashbo__571DF1D5");
         });
 
@@ -162,7 +162,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.Extrato).WithMany(p => p.Movimentacaos)
                 .HasForeignKey(d => d.ExtratoId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Movimenta__Extra__534D60F1");
         });
 
