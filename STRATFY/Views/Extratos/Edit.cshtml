@@ -1,44 +1,137 @@
-﻿@model STRATFY.Models.Extrato
+﻿@model STRATFY.Models.ExtratoEdicaoViewModel
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Editar Extrato";
+    var categorias = ViewData["CategoriaId"] as SelectList;
+    var tipos = new List<SelectListItem>
+    {
+        new SelectListItem { Value = "Débito", Text = "Débito" },
+        new SelectListItem { Value = "Crédito", Text = "Crédito" },
+        new SelectListItem { Value = "Dinheiro", Text = "Dinheiro" },
+        new SelectListItem { Value = "Pix", Text = "Pix" }
+    };
+
 }
 
-<h1>Edit</h1>
+<h2>Editar Extrato</h2>
 
-<h4>Extrato</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="UsuarioId" class="control-label"></label>
-                <select asp-for="UsuarioId" class="form-control" asp-items="ViewBag.UsuarioId"></select>
-                <span asp-validation-for="UsuarioId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Nome" class="control-label"></label>
-                <input asp-for="Nome" class="form-control" />
-                <span asp-validation-for="Nome" class="text-danger"></span>
-            </div>
-            @* <div class="form-group">
-                <label asp-for="DataCriacao" class="control-label"></label>
-                <input asp-for="DataCriacao" class="form-control" />
-                <span asp-validation-for="DataCriacao" class="text-danger"></span>
-            </div> *@
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="ExtratoId" />
+
+    <div class="form-group">
+        <label asp-for="NomeExtrato" class="control-label"></label>
+        <input asp-for="NomeExtrato" class="form-control" />
+        <span asp-validation-for="NomeExtrato" class="text-danger"></span>
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+    <div class="form-group">
+        <label asp-for="DataCriacao" class="control-label"></label>
+        <input asp-for="DataCriacao" class="form-control" type="date" />
+        <span asp-validation-for="DataCriacao" class="text-danger"></span>
+    </div>
+
+    <h4>Movimentações</h4>
+    <table class="table" id="movimentacoes-table">
+        <thead>
+            <tr>
+                <th>Descrição</th>
+                <th>Valor</th>
+                <th>Tipo</th>
+                <th>Categoria</th>
+                <th>Data</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Movimentacoes.Count; i++)
+            {
+                <tr>
+                    <input type="hidden" name="Movimentacoes[@i].Id" value="@Model.Movimentacoes[i].Id" />
+                    <input type="hidden" name="Movimentacoes[@i].ExtratoId" value="@Model.ExtratoId" />
+
+                    <td>
+                        <input class="form-control" name="Movimentacoes[@i].Descricao" value="@Model.Movimentacoes[i].Descricao" />
+                    </td>
+                    <td>
+                        <input class="form-control" name="Movimentacoes[@i].Valor" value="@Model.Movimentacoes[i].Valor" />
+                    </td>
+                    <td>
+                        <select name="Movimentacoes[@i].Tipo" class="form-control">
+                            @foreach (var item in tipos)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </td>
+                    <td>
+                        <select class="form-control" name="Movimentacoes[@i].CategoriaId">
+                            @foreach (var categoria in categorias)
+                            {
+                                <option value="@categoria.Value" selected="@(categoria.Value == Model.Movimentacoes[i].CategoriaId.ToString())">
+                                    @categoria.Text
+                                </option>
+                            }
+                        </select>
+                    </td>
+                    <td>
+                        <input class="form-control" type="date" name="Movimentacoes[@i].DataMovimentacao"
+                               value="@Model.Movimentacoes[i].DataMovimentacao.ToString("yyyy-MM-dd")" />
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger" onclick="removerLinha(this)">Remover</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button type="button" class="btn btn-secondary" onclick="adicionarLinha()">Adicionar Movimentação</button>
+    <br /><br />
+
+    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+</form>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function removerLinha(botao) {
+            $(botao).closest('tr').remove();
+        }
+
+        let indice = @Model.Movimentacoes.Count;
+
+        function adicionarLinha() {
+            const tabela = document.querySelector('#movimentacoes-table tbody');
+            const novaLinha = document.createElement('tr');
+
+            novaLinha.innerHTML = `
+                <input type="hidden" name="Movimentacoes[${indice}].Id" value="0" />
+                <input type="hidden" name="Movimentacoes[${indice}].ExtratoId" value="@Model.ExtratoId" />
+                <td><input class="form-control" name="Movimentacoes[${indice}].Descricao" /></td>
+                <td><input class="form-control" name="Movimentacoes[${indice}].Valor" /></td>
+                <td>
+                    <select class="form-control" name="Movimentacoes[${indice}].Tipo">
+                        <option value="Débito">Débito</option>
+                        <option value="Crédito">Crédito</option>
+                        <option value="Dinheiro">Dinheiro</option>
+                        <option value="Pix">Pix</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="form-control" name="Movimentacoes[${indice}].CategoriaId">
+                        @foreach (var categoria in categorias)
+                        {
+                            <option value="@categoria.Value">@categoria.Text</option>
+                        }
+                    </select>
+                </td>
+                <td>
+                    <input class="form-control" type="date" name="Movimentacoes[${indice}].DataMovimentacao" />
+                </td>
+                <td><button type="button" class="btn btn-danger" onclick="removerLinha(this)">Remover</button></td>
+            `;
+
+            tabela.appendChild(novaLinha);
+            indice++;
+        }
+    </script>
 }
