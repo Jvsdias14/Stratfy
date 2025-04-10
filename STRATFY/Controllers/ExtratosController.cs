@@ -71,7 +71,7 @@ namespace STRATFY.Controllers
             {
                 extrato.DataCriacao = DateOnly.FromDateTime(DateTime.Now);
                 await _extratoRepository.IncluirAsync(extrato);
-                return RedirectToAction("Create", "Movimentacoes", extrato);
+                return RedirectToAction("Edit", "Extratos", new { id = extrato.Id });
             }
             ViewData["UsuarioId"] = _extratoRepository.SelecionarChaveAsync(extrato.UsuarioId);
             return View(extrato);
