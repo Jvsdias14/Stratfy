@@ -60,6 +60,7 @@ namespace STRATFY.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,DashboardId,Titulo,Tipo,Campo1,Campo2,Cor,AtivarLegenda")] Grafico grafico)
         {
+            ModelState.Remove("Dashboard");
             if (ModelState.IsValid)
             {
                 _context.Add(grafico);
@@ -98,7 +99,7 @@ namespace STRATFY.Controllers
             {
                 return NotFound();
             }
-
+            ModelState.Remove("Dashboard");
             if (ModelState.IsValid)
             {
                 try

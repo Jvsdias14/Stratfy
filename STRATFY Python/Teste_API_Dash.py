@@ -64,13 +64,10 @@ if dashboard_id:
                     campo1 = graf["campo1"].lower()
                     campo2 = graf["campo2"].lower()
 
-                    if campo1 == "data":
-                        campo1 = "datamovimentacao"
-
                     if campo1 in df.columns and campo2 in df.columns:
                         st.subheader(graf["titulo"])
                         if graf["tipo"].lower() == "barra":
-                            st.bar_chart(df.groupby(campo1)[campo2].sum())
+                            st.bar_chart(df.groupby(campo1)[campo2].sum(), color = graf["cor"].lower())
                         elif graf["tipo"].lower() == "pizza":
                             dados = df.groupby(campo1)[campo2].sum()
                             fig, ax = plt.subplots()

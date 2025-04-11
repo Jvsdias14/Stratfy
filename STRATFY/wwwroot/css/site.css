@@ -46,3 +46,8 @@ body {
 .btn-outline-info:hover {
     background-color: #00b4d8;
 }
+input.form-control-color {
+    appearance: none;
+    -webkit-appearance: none;
+    border-radius: 4px;
+}
