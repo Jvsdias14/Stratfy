@@ -1,37 +1,83 @@
-﻿@model STRATFY.Models.Dashboard
-
+﻿@model DashboardVM
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Criar Dashboard";
 }
 
-<h1>Create</h1>
+<h2>Criar Dashboard</h2>
 
-<h4>Dashboard</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="ExtratoId" class="control-label"></label>
-                <select asp-for="ExtratoId" class ="form-control" asp-items="ViewBag.ExtratoId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="Descricao" class="control-label"></label>
-                <input asp-for="Descricao" class="form-control" />
-                <span asp-validation-for="Descricao" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+<form method="post">
+    <div class="form-group">
+        <label asp-for="Nome"></label>
+        <input asp-for="Nome" class="form-control" />
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+    <div class="form-group">
+        <label asp-for="ExtratoId" class="control-label"></label>
+        <select asp-for="ExtratoId" asp-items="Model.ExtratosDisponiveis" class="form-control"></select>
+        <span asp-validation-for="ExtratoId" class="text-danger"></span>
+    </div>
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
+    <hr />
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Gráficos</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Campo 1 (Eixo X)</th>
+                        <th>Campo 2 (Eixo Y)</th>
+                        <th>Tipo</th>
+                        <th>Cor</th>
+                        <th>Ativar Legenda</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Graficos.Count; i++)
+                    {
+                        <tr>
+                            <td><input name="Graficos[@i].Titulo" value="@Model.Graficos[i].Titulo" class="form-control" /></td>
+                            <td><input name="Graficos[@i].Campo1" value="@Model.Graficos[i].Campo1" class="form-control" /></td>
+                            <td><input name="Graficos[@i].Campo2" value="@Model.Graficos[i].Campo2" class="form-control" /></td>
+                            <td><input name="Graficos[@i].Tipo" value="@Model.Graficos[i].Tipo" class="form-control" /></td>
+                            <td><input name="Graficos[@i].Cor" value="@Model.Graficos[i].Cor" class="form-control" /></td>
+                            <td>
+                                <input type="checkbox" name="Graficos[@i].AtivarLegenda" value="true"
+                                @(Model.Graficos[i].AtivarLegenda ? "checked" : "") />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-md-6">
+            <h4>Cartões</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Campo</th>
+                        <th>Agregação</th>
+                        <th>Cor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Cartoes.Count; i++)
+                    {
+                        <tr>
+                            <td><input name="Cartoes[@i].Nome" value="@Model.Cartoes[i].Nome" class="form-control" /></td>
+                            <td><input name="Cartoes[@i].Campo" value="@Model.Cartoes[i].Campo" class="form-control" /></td>
+                            <td><input name="Cartoes[@i].TipoAgregacao" value="@Model.Cartoes[i].TipoAgregacao" class="form-control" /></td>
+                            <td><input name="Cartoes[@i].Cor" value="@Model.Cartoes[i].Cor" class="form-control" /></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <button type="submit" name="action" value="manual" class="btn btn-primary">Criar Personalizado</button>
+    <button type="submit" name="action" value="padrao" class="btn btn-secondary">Criar Dash Padrão</button>
+
+</form>

@@ -10,7 +10,7 @@ using STRATFY.Models;
 
 namespace STRATFY.Controllers
 {
-    [Authorize]
+    //[Authorize]
     public class DashboardsController : Controller
     {
         private readonly AppDbContext _context;
@@ -47,28 +47,169 @@ namespace STRATFY.Controllers
         }
 
         // GET: Dashboards/Create
+        [HttpGet]
         public IActionResult Create()
         {
-            ViewData["ExtratoId"] = new SelectList(_context.Extratos, "Id", "Id");
-            return View();
+            var model = new DashboardVM
+            {
+                ExtratosDisponiveis = _context.Extratos
+                    .Select(e => new SelectListItem
+                    {
+                        Value = e.Id.ToString(),
+                        Text = e.Nome
+                    }).ToList()
+            };
+
+            return View(model);
         }
 
-        // POST: Dashboards/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,ExtratoId,Descricao")] Dashboard dashboard)
+        public IActionResult Create(DashboardVM model, string action)
         {
-            if (ModelState.IsValid)
+            if (action == "padrao")
             {
-                _context.Add(dashboard);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                // Redireciona para a action CriarPadrao (já existente)
+                return RedirectToAction("CriarPadrao", new { nome = model.Nome, extratoId = model.ExtratoId });
             }
-            ViewData["ExtratoId"] = new SelectList(_context.Extratos, "Id", "Id", dashboard.ExtratoId);
-            return View(dashboard);
+
+            // Criação personalizada
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var dashboard = new Dashboard
+            {
+                Descricao = model.Nome,
+                ExtratoId = model.ExtratoId,
+                Graficos = model.Graficos,
+                Cartoes = model.Cartoes
+            };
+
+            _context.Dashboards.Add(dashboard);
+            _context.SaveChanges();
+
+            return RedirectToAction("Details", new { id = dashboard.Id });
         }
+
+
+        // Botão Criar Dash Padrão
+        [HttpGet]
+        public IActionResult CriarPadrao(string nome, int extratoId)
+        {
+            if (string.IsNullOrWhiteSpace(nome) || extratoId == 0)
+            {
+                var model = new DashboardVM
+                {
+                    Nome = nome,
+                    ExtratoId = extratoId,
+                    ExtratosDisponiveis = ObterListaExtratos()
+                };
+                ModelState.AddModelError("", "Preencha todos os campos obrigatórios.");
+                return View("Create", model);
+            }
+
+            var graficosPadrao = new List<Grafico>
+    {
+        new Grafico { Titulo = "Gasto diário", Campo1 = "Data", Campo2 = "Valor", Tipo = "Barra", Cor = "#3366cc", AtivarLegenda = false },
+        new Grafico { Titulo = "Gasto por categoria", Campo1 = "Categoria", Campo2 = "Valor", Tipo = "Pizza", Cor = "#3366cc", AtivarLegenda = false }
+    };
+
+            var cartoesPadrao = new List<Cartao>
+    {
+        new Cartao { Nome = "Total Geral", Campo = "Valor", TipoAgregacao = "soma", Cor = "black" },
+        new Cartao { Nome = "Contagem de Categorias", Campo = "Categoria", TipoAgregacao = "contagem", Cor = "blue" }
+    };
+
+            var dashboard = new Dashboard
+            {
+                Descricao = nome,
+                ExtratoId = extratoId,
+                Graficos = graficosPadrao,
+                Cartoes = cartoesPadrao
+            };
+
+            _context.Dashboards.Add(dashboard);
+            _context.SaveChanges();
+
+            return RedirectToAction("VisualizarStreamlit", new { id = dashboard.Id });
+        }
+
+
+        [HttpGet]
+        public IActionResult VisualizarStreamlit(int id)
+        {
+            var dashboard = _context.Dashboards
+                .Include(d => d.Graficos)
+                .Include(d => d.Cartoes)
+                .FirstOrDefault(d => d.Id == id);
+
+            if (dashboard == null)
+            {
+                return NotFound();
+            }
+
+            return View(dashboard); // a View usará o dashboard.Id para montar a URL
+        }
+
+
+
+        [HttpGet("api/dashboarddata/{id}")]
+        public IActionResult GetDashboardData(int id)
+        {
+            var dashboard = _context.Dashboards
+                .Include(d => d.Graficos)
+                .Include(d => d.Cartoes)
+                .Include(d => d.Extrato)
+                    .ThenInclude(e => e.Movimentacaos)
+                     .ThenInclude(m => m.Categoria)
+                .FirstOrDefault(d => d.Id == id);
+
+            if (dashboard == null)
+                return NotFound();
+
+            var result = new
+            {
+                Dashboard = new { dashboard.Id, dashboard.Descricao },
+                Extrato = dashboard.Extrato.Nome,
+                Movimentacoes = dashboard.Extrato.Movimentacaos.Select(m => new
+                {
+                    m.DataMovimentacao,
+                    m.Descricao,
+                    m.Valor,
+                    m.Tipo,
+                    Categoria = m.Categoria != null ? m.Categoria.Nome : null
+                }),
+                Graficos = dashboard.Graficos.Select(g => new
+                {
+                    g.Titulo,
+                    g.Campo1,
+                    g.Campo2,
+                    g.Tipo,
+                    g.Cor,
+                    g.AtivarLegenda
+                }),
+                Cartoes = dashboard.Cartoes.Select(c => new
+                {
+                    c.Nome,
+                    c.Campo,
+                    c.TipoAgregacao,
+                    c.Cor
+                })
+            };
+
+            return Ok(result);
+        }
+
+
+        private List<SelectListItem> ObterListaExtratos()
+        {
+            return _context.Extratos.Select(e => new SelectListItem
+            {
+                Value = e.Id.ToString(),
+                Text = e.Nome
+            }).ToList();
+        }
+
 
         // GET: Dashboards/Edit/5
         public async Task<IActionResult> Edit(int? id)
