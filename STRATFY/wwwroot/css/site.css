@@ -37,3 +37,12 @@ body {
 .nav-link:hover{
     color:#ffffff;
 }
+
+.btn-outline-info {
+    transition: background-color 0.7s ease, color 0.7s ease;
+    border-block-color: #0077b6;
+    color: #0077b6;
+}
+.btn-outline-info:hover {
+    background-color: #00b4d8;
+}
