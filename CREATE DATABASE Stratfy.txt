@@ -1,0 +1,76 @@
+CREATE DATABASE Stratfy;
+GO
+
+USE Stratfy;
+GO
+
+CREATE TABLE Categoria (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    Nome VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE Usuario (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    Nome VARCHAR(255) NULL,
+    Email VARCHAR(255) NULL,
+    Senha VARCHAR(255) NULL
+);
+
+CREATE TABLE Extrato (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    Usuario_id INT NOT NULL,
+    Nome VARCHAR(255) NOT NULL,
+    DataCriacao DATE NOT NULL,
+    FOREIGN KEY (Usuario_id) REFERENCES Usuario(id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
+CREATE TABLE Dashboard (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    Extrato_id INT NOT NULL,
+    Descricao VARCHAR(255) NOT NULL,
+    CONSTRAINT FK_Dashboard_Extrato
+        FOREIGN KEY (Extrato_id) REFERENCES Extrato(id)
+        ON DELETE CASCADE ON UPDATE NO ACTION
+);
+
+CREATE TABLE Movimentacao (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    Extrato_id INT NOT NULL,
+    Categoria_id INT NOT NULL,
+    Descricao VARCHAR(255) NULL,
+    Tipo VARCHAR(50) NOT NULL,
+    Valor DECIMAL(18,2) NOT NULL,
+    DataMovimentacao DATE NOT NULL,
+    CONSTRAINT FK_Movimentacao_Extrato
+        FOREIGN KEY (Extrato_id) REFERENCES Extrato(id)
+        ON DELETE CASCADE ON UPDATE NO ACTION,
+    CONSTRAINT FK_Movimentacao_Categoria
+        FOREIGN KEY (Categoria_id) REFERENCES Categoria(id)
+        ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
+CREATE TABLE Graficos (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    Dashboard_id INT NOT NULL,
+    Titulo VARCHAR(255) NOT NULL,
+    Tipo VARCHAR(100) NOT NULL,
+    Campo1 VARCHAR(100) NOT NULL,
+    Campo2 VARCHAR(100) NOT NULL,
+    Cor VARCHAR(50) NOT NULL,
+    AtivarLegenda BIT NOT NULL,
+    CONSTRAINT FK_Graficos_Dashboard
+        FOREIGN KEY (Dashboard_id) REFERENCES Dashboard(id)
+        ON DELETE CASCADE ON UPDATE NO ACTION
+);
+
+CREATE TABLE Cartoes (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    Dashboard_id INT NOT NULL,
+    Nome VARCHAR(255) NOT NULL,
+    Campo VARCHAR(100) NOT NULL,
+    TipoAgregacao VARCHAR(100) NOT NULL,
+    Cor VARCHAR(50) NOT NULL,
+    CONSTRAINT FK_Cartoes_Dashboard
+        FOREIGN KEY (Dashboard_id) REFERENCES Dashboard(id)
+        ON DELETE CASCADE ON UPDATE NO ACTION
+);
