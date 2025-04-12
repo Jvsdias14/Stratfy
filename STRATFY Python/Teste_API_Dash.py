@@ -12,8 +12,9 @@ dashboard_id = str(query.get("dashboardId", "")).strip()
 
 if dashboard_id:
     url = f"http://localhost:5211/api/dashboarddata/{dashboard_id}"
-
+    
     response = requests.get(url)
+
     if response.status_code == 200:
         data = response.json()
 

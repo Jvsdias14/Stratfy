@@ -11,7 +11,7 @@ using STRATFY.Models;
 
 namespace STRATFY.Controllers
 {
-    //[Authorize]
+    [Authorize]
     public class MovimentacoesController : Controller
     {
         private readonly AppDbContext _context;

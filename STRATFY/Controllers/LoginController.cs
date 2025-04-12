@@ -76,5 +76,12 @@ namespace STRATFY.Controllers
             return RedirectToAction("Index");
         }
 
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult Cadastrar()
+        {
+            return RedirectToAction("Create", "Usuarios");
+        }
+
     }
 }

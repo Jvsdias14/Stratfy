@@ -10,7 +10,7 @@ using STRATFY.Models;
 
 namespace STRATFY.Controllers
 {
-    //[Authorize]
+    [Authorize]
     public class DashboardsController : Controller
     {
         private readonly AppDbContext _context;
@@ -134,26 +134,8 @@ namespace STRATFY.Controllers
             return RedirectToAction("Details", new { id = dashboard.Id });
         }
 
-
-        [HttpGet]
-        public IActionResult VisualizarStreamlit(int id)
-        {
-            var dashboard = _context.Dashboards
-                .Include(d => d.Graficos)
-                .Include(d => d.Cartoes)
-                .FirstOrDefault(d => d.Id == id);
-
-            if (dashboard == null)
-            {
-                return NotFound();
-            }
-
-            return View(dashboard); // a View usará o dashboard.Id para montar a URL
-        }
-
-
-
         [HttpGet("api/dashboarddata/{id}")]
+        [AllowAnonymous]
         public IActionResult GetDashboardData(int id)
         {
             var dashboard = _context.Dashboards

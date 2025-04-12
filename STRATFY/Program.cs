@@ -24,7 +24,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped(typeof(IRepositoryBase<>), typeof(RepositoryBase<>));
 builder.Services.AddScoped<RepositoryLogin>();
 
-
+builder.WebHost.UseUrls("http://localhost:5211");
 
 var app = builder.Build();
 

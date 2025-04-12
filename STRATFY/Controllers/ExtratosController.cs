@@ -13,7 +13,7 @@ using System.Security.Cryptography.Xml;
 
 namespace STRATFY.Controllers
 {
-    //[Authorize]
+    [Authorize]
     public class ExtratosController : Controller
     {
         private readonly AppDbContext _context;
