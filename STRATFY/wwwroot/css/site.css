@@ -40,14 +40,34 @@ body {
 
 .btn-outline-info {
     transition: background-color 0.7s ease, color 0.7s ease;
-    border-block-color: #0077b6;
-    color: #0077b6;
+    border-block-color: #03045e;
+    color: #03045e;
+    border-block-width: 2px;
+    border: 2px solid;
 }
 .btn-outline-info:hover {
     background-color: #00b4d8;
+    color: #ffffff;
 }
 input.form-control-color {
     appearance: none;
     -webkit-appearance: none;
     border-radius: 4px;
+}
+.btn-outline-dark{
+        transition: background-color 0.7s ease, color 0.7s ease;
+}
+.btn-outline-dark:hover {
+    background-color: #000000;
+}
+
+.img-logo{
+    width: 200px;
+    height: 200px;
+}
+
+.d-flex{
+        display: flex;
+    justify-content: right;
+    align-items: center;
 }

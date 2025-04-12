@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="background-color: #C4f0f8">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,7 +11,11 @@
 <body>
     <div class="d-flex">
         <nav class="sidebar bg-light p-3">
-            <a class="navbar-brand mb-4 d-block" asp-area="" asp-controller="Home" asp-action="Index">STRATFY</a>
+            <div class="d-flex">
+                <a asp-area="" asp-controller="Home" asp-action="Index">
+                    <img class="img-logo" src="~/Images/Stratfy_Logo.png" alt="Stratfy Logo" />
+                </a>
+            </div>
             <ul class="nav flex-column">
                 <li class="nav-item">
                     <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
@@ -37,23 +41,19 @@
             </form>
         </nav>
 
-        <div class="content flex-grow-1 p-3">
-            <main role="main" class="pb-3">
+        <div style ="background-color: #c4f0f8" class="content flex-grow-1 p-3">
+            <main role="main">
                 @RenderBody()
             </main>
         </div>
     </div>
-    <div class="container-fluid">
+    @* <div class="container-fluid">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
-    </div>
+    </div> *@
 
-@*     <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - STRATFY - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer> *@
+   
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
