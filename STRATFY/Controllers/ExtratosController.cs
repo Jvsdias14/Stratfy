@@ -10,14 +10,16 @@ using STRATFY.Interfaces;
 using Microsoft.VisualBasic;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Cryptography.Xml;
+using STRATFY.Repositories;
 
 namespace STRATFY.Controllers
 {
     [Authorize]
     public class ExtratosController : Controller
     {
-        private readonly AppDbContext _context;
         private readonly IRepositoryBase<Extrato> _extratoRepository;
+        private readonly AppDbContext _context;
+        
 
         public ExtratosController(AppDbContext context, IRepositoryBase<Extrato> extratoRepository)
         {
@@ -83,7 +85,7 @@ namespace STRATFY.Controllers
             if (id == null)
                 return NotFound();
 
-            var extrato = await _context.Extratos
+            Extrato extrato = await _context.Extratos
                 .Include(e => e.Movimentacaos)
                 .FirstOrDefaultAsync(e => e.Id == id);
 
@@ -102,7 +104,9 @@ namespace STRATFY.Controllers
                     Valor = m.Valor,
                     Tipo = m.Tipo,
                     CategoriaId = m.CategoriaId,
-                    ExtratoId = m.ExtratoId
+                    ExtratoId = m.ExtratoId,
+                    DataMovimentacao = m.DataMovimentacao
+
                 }).ToList()
             };
 
@@ -177,6 +181,7 @@ namespace STRATFY.Controllers
                         movBanco.Valor = mov.Valor;
                         movBanco.Tipo = mov.Tipo;
                         movBanco.CategoriaId = mov.CategoriaId;
+                        movBanco.DataMovimentacao = mov.DataMovimentacao;
                     }
                 }
             }

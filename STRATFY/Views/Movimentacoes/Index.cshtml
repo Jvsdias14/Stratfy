@@ -71,7 +71,7 @@
                     </div>
 
                     <p class="mov-valor mb-1">@sinal @item.Valor.ToString("C")</p>
-                    <p class="mov-info mb-1"><strong>Data:</strong> @item.DataMovimentacao.ToString("dd/MM/yyyy")</p>
+                    <p class="mov-info mb-1"><strong>Data:</strong> @item.DataMovimentacao?.ToString("dd/MM/yyyy")</p>
                     <p class="mov-info mb-1"><strong>Categoria:</strong> @item.Categoria?.Nome</p>
                     <p class="mov-info mb-3"><strong>Extrato:</strong> @item.Extrato?.Nome</p>
 

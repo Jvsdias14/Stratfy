@@ -26,7 +26,7 @@ public partial class Movimentacao
 
     public decimal Valor { get; set; }
 
-    public DateOnly DataMovimentacao { get; set; } = DateOnly.FromDateTime(DateTime.Now);
+    public DateOnly? DataMovimentacao { get; set; }
 
 
 }

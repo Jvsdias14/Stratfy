@@ -32,8 +32,8 @@
             </div>
 
             <h4 class="text-center">Movimentações</h4>
-            <div class="table-responsive rounded" style="background-color: white; color: black; padding: 1rem; border-radius: 16px;">
-                <table class="table table-bordered align-middle mb-0" id="movimentacoes-table">
+            <div class="table-responsive rounded" style="background-color: white; color: black; padding: 0.5rem; border-radius: 16px; overflow-x: auto;">
+                <table class="table table-bordered align-middle mb-0" id="movimentacoes-table" style="table-layout: auto; width: 100%;">
                     <thead class="table-light">
                         <tr>
                             <th>Descrição</th>
@@ -75,7 +75,7 @@
                                 </td>
                                 <td>
                                     <input class="form-control rounded-3" type="date" name="Movimentacoes[@i].DataMovimentacao"
-                                           value="@Model.Movimentacoes[i].DataMovimentacao.ToString("yyyy-MM-dd")" />
+                                           value="@Model.Movimentacoes[i].DataMovimentacao?.ToString("yyyy-MM-dd")" />
                                 </td>
                                 <td>
                                     <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerLinha(this)">Remover</button>
@@ -101,8 +101,26 @@
 @section Scripts {
     <script>
         function removerLinha(botao) {
-            $(botao).closest('tr').remove();
+            const linha = $(botao).closest('tr');
+            linha.remove();
+            reindexarTabela();
         }
+
+        function reindexarTabela() {
+            const linhas = $('#movimentacoes-table tbody tr');
+            linhas.each(function (index) {
+                $(this).find('input, select').each(function () {
+                    const name = $(this).attr('name');
+                    if (name) {
+                        const novoName = name.replace(/Movimentacoes\[\d+\]/, `Movimentacoes[${index}]`);
+                        $(this).attr('name', novoName);
+                    }
+                });
+            });
+
+            indice = linhas.length; // atualiza o índice para o próximo adicionarLinha
+        }
+
 
         let indice = @Model.Movimentacoes.Count;
 
