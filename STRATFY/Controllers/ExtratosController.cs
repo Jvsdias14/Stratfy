@@ -18,13 +18,15 @@ namespace STRATFY.Controllers
     public class ExtratosController : Controller
     {
         private readonly IRepositoryBase<Extrato> _extratoRepository;
+        private readonly IRepositoryBase<Usuario> _usuarioRepository;
         private readonly AppDbContext _context;
         
 
-        public ExtratosController(AppDbContext context, IRepositoryBase<Extrato> extratoRepository)
+        public ExtratosController(AppDbContext context, IRepositoryBase<Extrato> extratoRepository, IRepositoryBase<Usuario> usuarioRepo)
         {
             _context = context;
             _extratoRepository = extratoRepository;
+            _usuarioRepository = usuarioRepo;
         }
 
 
@@ -59,7 +61,8 @@ namespace STRATFY.Controllers
         // GET: Extratos/Create
         public IActionResult Create()
         {
-            ViewData["UsuarioId"] = new SelectList(_context.Usuarios, "Id", "Id");
+            var usuarios = _usuarioRepository.SelecionarTodos();
+            ViewData["UsuarioId"] = new SelectList(usuarios, "Id", "Nome");
             return View();
         }
 
@@ -85,7 +88,7 @@ namespace STRATFY.Controllers
             if (id == null)
                 return NotFound();
 
-            Extrato extrato = await _context.Extratos
+            var extrato = await _context.Extratos
                 .Include(e => e.Movimentacaos)
                 .FirstOrDefaultAsync(e => e.Id == id);
 

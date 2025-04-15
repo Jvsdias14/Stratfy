@@ -8,13 +8,17 @@ namespace STRATFY.Repositories
         public RepositoryExtrato(AppDbContext context, bool pSaveChanges = true) : base(context, pSaveChanges)
         {
         }
-        public async Task<Extrato> CarregarExtratoCompleto(int id)
-        {
-            return await contexto.Extratos
-                .Include(e => e.Movimentacaos)
-                .FirstOrDefaultAsync(e => e.Id == id);
-        }
 
+        public Extrato CarregarExtratoCompleto(int extratoId)
+        {
+            var extrato = contexto.Extratos
+                .Include(e => e.Usuario)
+                .Include(e => e.Movimentacaos)
+                .ThenInclude(m => m.Categoria)
+                .FirstOrDefault(e => e.Id == extratoId);
+
+            return extrato;
+        }
         public void Dispose()
         {
         }
