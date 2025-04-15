@@ -1,77 +1,79 @@
 ﻿@model STRATFY.Models.Grafico
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Novo Gráfico";
 }
 
-<h1>Novo gráfico</h1>
+<div class="d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="p-5 shadow" style="background-color: #03045e; width: 100%; max-width: 600px; color: white; border-radius: 24px;">
+        <h2 class="text-center mb-4">Novo Gráfico</h2>
 
-<h4>Grafico</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
         <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="DashboardId" class="control-label"></label>
-                <select asp-for="DashboardId" class ="form-control" asp-items="ViewBag.DashboardId"></select>
+            <div asp-validation-summary="ModelOnly" class="text-warning mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="DashboardId" class="form-label"></label>
+                <select asp-for="DashboardId" class="form-control rounded-3" asp-items="ViewBag.DashboardId"></select>
             </div>
-            <div class="form-group">
-                <label asp-for="Titulo" class="control-label"></label>
-                <input asp-for="Titulo" class="form-control" />
-                <span asp-validation-for="Titulo" class="text-danger"></span>
+
+            <div class="mb-3">
+                <label asp-for="Titulo" class="form-label"></label>
+                <input asp-for="Titulo" class="form-control rounded-3" />
+                <span asp-validation-for="Titulo" class="text-warning"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Tipo" class="control-label"></label>
-                <input asp-for="Tipo" class="form-control" />
-                <span asp-validation-for="Tipo" class="text-danger"></span>
+
+            <div class="mb-3">
+                <label asp-for="Tipo" class="form-label"></label>
+                <input asp-for="Tipo" class="form-control rounded-3" />
+                <span asp-validation-for="Tipo" class="text-warning"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Campo1" class="control-label"></label>
-                <input asp-for="Campo1" class="form-control" />
-                <span asp-validation-for="Campo1" class="text-danger"></span>
+
+            <div class="mb-3">
+                <label asp-for="Campo1" class="form-label"></label>
+                <input asp-for="Campo1" class="form-control rounded-3" />
+                <span asp-validation-for="Campo1" class="text-warning"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Campo2" class="control-label"></label>
-                <input asp-for="Campo2" class="form-control" />
-                <span asp-validation-for="Campo2" class="text-danger"></span>
+
+            <div class="mb-3">
+                <label asp-for="Campo2" class="form-label"></label>
+                <input asp-for="Campo2" class="form-control rounded-3" />
+                <span asp-validation-for="Campo2" class="text-warning"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Cor" class="control-label"></label>
+
+            <div class="mb-3">
+                <label asp-for="Cor" class="form-label"></label>
                 <div class="input-group align-items-center">
-                    <input asp-for="Cor" class="form-control" id="corTexto" style="flex: 1;" />
-                    <input type="color" id="corPicker" class="form-control-color" style="width: 40px; height: 38px; border: none; padding: 0; margin-left: 6px; cursor: pointer;" />
+                    <input asp-for="Cor" class="form-control rounded-start" id="corTexto" />
+                    <input type="color" id="corPicker" class="form-control-color rounded-end" style="width: 45px; height: 38px; border: none; cursor: pointer;" />
                 </div>
-                <span asp-validation-for="Cor" class="text-danger"></span>
+                <span asp-validation-for="Cor" class="text-warning"></span>
             </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="AtivarLegenda" /> @Html.DisplayNameFor(model => model.AtivarLegenda)
-                </label>
+
+            <div class="form-check mb-4">
+                <input class="form-check-input" asp-for="AtivarLegenda" id="ativarLegenda" />
+                <label class="form-check-label" for="ativarLegenda">@Html.DisplayNameFor(model => model.AtivarLegenda)</label>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Criar" class="btn btn-primary" />
+
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn rounded-pill" style="background-color: #00b4d8; color: white;">Criar</button>
+                <a asp-action="Index" class="btn btn-light rounded-pill">Voltar</a>
             </div>
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Voltar</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
     <script>
         const corTexto = document.getElementById("corTexto");
         const corPicker = document.getElementById("corPicker");
 
-        // Quando mudar no color picker, atualiza o campo de texto
         corPicker.addEventListener("input", function () {
             corTexto.value = corPicker.value;
         });
 
-        // Quando carregar a página, sincroniza o picker com o valor atual (se houver)
         window.addEventListener("DOMContentLoaded", function () {
             if (corTexto.value) {
                 corPicker.value = corTexto.value;

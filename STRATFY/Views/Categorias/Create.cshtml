@@ -1,33 +1,32 @@
 ﻿@model STRATFY.Models.Categoria
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Nova Categoria";
 }
 
-<h1>Nova Categoria</h1>
+<div class="d-flex justify-content-center align-items-center" style="min-height: 90vh;">
+    <div class="p-5 shadow" style="background-color: #03045e; width: 100%; max-width: 600px; color: white; border-radius: 24px;">
+        <h2 class="text-center mb-4">Nova Categoria</h2>
 
-<h4>Categoria</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
         <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Nome" class="control-label"></label>
-                <input asp-for="Nome" class="form-control" />
-                <span asp-validation-for="Nome" class="text-danger"></span>
+            <div asp-validation-summary="ModelOnly" class="text-warning mb-3"></div>
+
+            <div class="mb-4">
+                <label asp-for="Nome" class="form-label"></label>
+                <input asp-for="Nome" class="form-control rounded-3" />
+                <span asp-validation-for="Nome" class="text-warning"></span>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Criar" class="btn btn-primary" />
+
+            <div class="d-flex justify-content-between">
+                <a asp-action="Index" class="btn btn-light rounded-pill">Voltar</a>
+                <input type="submit" value="Criar" class="btn rounded-pill" style="background-color: #00b4d8; color: white;" />
             </div>
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Voltar</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
