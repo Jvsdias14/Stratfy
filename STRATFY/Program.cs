@@ -23,6 +23,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped(typeof(IRepositoryBase<>), typeof(RepositoryBase<>));
 builder.Services.AddScoped<RepositoryLogin>();
+builder.Services.AddScoped<RepositoryExtrato>();
+builder.Services.AddScoped<RepositoryMovimentacao>();
 
 builder.WebHost.UseUrls("http://localhost:5211");
 

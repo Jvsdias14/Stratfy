@@ -17,24 +17,26 @@ namespace STRATFY.Controllers
     [Authorize]
     public class ExtratosController : Controller
     {
-        private readonly IRepositoryBase<Extrato> _extratoRepository;
+        private readonly RepositoryExtrato _extratoRepository;
         private readonly IRepositoryBase<Usuario> _usuarioRepository;
+        private readonly IRepositoryBase<Categoria> _categoriaRepository;
+        private readonly RepositoryMovimentacao _movRepository;
         private readonly AppDbContext _context;
         
 
-        public ExtratosController(AppDbContext context, IRepositoryBase<Extrato> extratoRepository, IRepositoryBase<Usuario> usuarioRepo)
+        public ExtratosController(AppDbContext context, RepositoryExtrato extratoRepository, IRepositoryBase<Usuario> usuarioRepo, RepositoryMovimentacao movRepository, IRepositoryBase<Categoria> categoriaRepository)
         {
             _context = context;
             _extratoRepository = extratoRepository;
             _usuarioRepository = usuarioRepo;
+            _movRepository = movRepository;
+            _categoriaRepository = categoriaRepository;
         }
 
 
         // GET: Extratos
         public async Task<IActionResult> Index()
         {
-            //var appDbContext = _context.Extratos.Include(e => e.Usuario);
-            //return View(await appDbContext.ToListAsync());
             var extratos = await _extratoRepository.SelecionarTodosAsync();
             return View(extratos);
         }
@@ -47,9 +49,7 @@ namespace STRATFY.Controllers
                 return NotFound();
             }
 
-            var extrato = await _context.Extratos
-                .Include(e => e.Usuario)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var extrato = _extratoRepository.CarregarExtratoCompleto(id.Value);
             if (extrato == null)
             {
                 return NotFound();
@@ -69,7 +69,7 @@ namespace STRATFY.Controllers
   
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("id,UsuarioId,Nome,DataCriacao")] Extrato extrato)
+        public async Task<IActionResult> Create([Bind("UsuarioId,Nome,DataCriacao")] Extrato extrato)
         {
             ModelState.Remove("Usuario");
             if (ModelState.IsValid)
@@ -88,9 +88,7 @@ namespace STRATFY.Controllers
             if (id == null)
                 return NotFound();
 
-            var extrato = await _context.Extratos
-                .Include(e => e.Movimentacaos)
-                .FirstOrDefaultAsync(e => e.Id == id);
+            var extrato = _extratoRepository.CarregarExtratoCompleto(id.Value);
 
             if (extrato == null)
                 return NotFound();
@@ -113,23 +111,10 @@ namespace STRATFY.Controllers
                 }).ToList()
             };
 
-            ViewData["CategoriaId"] = new SelectList(await _context.Categoria.ToListAsync(), "Id", "Nome");
+            ViewData["CategoriaId"] = new SelectList(_categoriaRepository.SelecionarTodos(), "Id", "Nome");
 
             return View(viewModel);
         }
-
-        //if (id == null)
-        //{
-        //    return NotFound();
-        //}
-
-        //var extrato = await _context.Extratos.FindAsync(id);
-        //if (extrato == null)
-        //{
-        //    return NotFound();
-        //}
-        //ViewData["UsuarioId"] = new SelectList(_context.Usuarios, "Id", "Id", extrato.UsuarioId);
-        //return View(extrato);
 
 
         [HttpPost]
@@ -138,13 +123,11 @@ namespace STRATFY.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewData["CategoriaId"] = new SelectList(await _context.Categoria.ToListAsync(), "Id", "Nome");
+                ViewData["CategoriaId"] = new SelectList(_categoriaRepository.SelecionarTodos(), "Id", "Nome");
                 return View(model);
             }
 
-            var extrato = await _context.Extratos
-                .Include(e => e.Movimentacaos)
-                .FirstOrDefaultAsync(e => e.Id == model.ExtratoId);
+            var extrato = _extratoRepository.CarregarExtratoCompleto(model.ExtratoId);
 
             if (extrato == null)
             {
@@ -163,7 +146,7 @@ namespace STRATFY.Controllers
                 .Where(m => !idsRecebidos.Contains(m.Id))
                 .ToList();
 
-            _context.Movimentacaos.RemoveRange(movimentacoesRemovidas);
+            _movRepository.RemoverVarias(movimentacoesRemovidas);
 
             // Itera sobre cada movimentação recebida no form
             foreach (var mov in model.Movimentacoes)
@@ -172,12 +155,12 @@ namespace STRATFY.Controllers
                 {
                     // Nova movimentação
                     mov.ExtratoId = model.ExtratoId;
-                    _context.Movimentacaos.Add(mov);
+                    _movRepository.Incluir(mov);
                 }
                 else
                 {
                     // Atualização
-                    var movBanco = extrato.Movimentacaos.FirstOrDefault(m => m.Id == mov.Id);
+                    var movBanco = _movRepository.SelecionarChave(mov.Id);
                     if (movBanco != null)
                     {
                         movBanco.Descricao = mov.Descricao;
@@ -189,42 +172,9 @@ namespace STRATFY.Controllers
                 }
             }
 
-            await _context.SaveChangesAsync();
+            _extratoRepository.Salvar();
             return RedirectToAction(nameof(Index));
         }
-
-
-
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Edit( Extrato extrato)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        try
-        //        {
-        //            extrato.DataCriacao = DateOnly.FromDateTime(DateTime.Now);
-        //            _context.Update(extrato);
-        //            await _context.SaveChangesAsync();
-        //        }
-        //        catch (DbUpdateConcurrencyException)
-        //        {
-        //            if (!ExtratoExists(extrato.Id))
-        //            {
-        //                return NotFound();
-        //            }
-        //            else
-        //            {
-        //                throw;
-        //            }
-        //        }
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    ViewData["UsuarioId"] = new SelectList(_context.Usuarios, "Id", "Id", extrato.UsuarioId);
-        //    return View(extrato);
-        //}
-
-        // GET: Extratos/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -232,9 +182,7 @@ namespace STRATFY.Controllers
                 return NotFound();
             }
 
-            var extrato = await _context.Extratos
-                .Include(e => e.Usuario)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var extrato = _extratoRepository.CarregarExtratoCompleto(id.Value);
             if (extrato == null)
             {
                 return NotFound();
@@ -248,15 +196,13 @@ namespace STRATFY.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var extrato = await _context.Extratos.FindAsync(id);
+            var extrato = _extratoRepository.SelecionarChave(id);
             try
             {
                 if (extrato != null)
                 {
-                    _context.Extratos.Remove(extrato);
-                    await _context.SaveChangesAsync();
+                    _extratoRepository.Excluir(extrato);
                 }
-
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -264,11 +210,6 @@ namespace STRATFY.Controllers
                 TempData["DeleteError"] = "Não foi possível excluir o extrato porque ele possui movimentações vinculadas.";
                 return RedirectToAction(nameof(Delete), new { id }); // Redireciona de volta pra tela de confirmação de delete
             }
-        }
-
-        private bool ExtratoExists(int id)
-        {
-            return _context.Extratos.Any(e => e.Id == id);
         }
     }
 }

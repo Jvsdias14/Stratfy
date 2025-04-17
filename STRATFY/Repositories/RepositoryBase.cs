@@ -97,6 +97,11 @@ namespace STRATFY.Repositories
         {
             contexto.Dispose();
         }
+
+        public void Salvar()
+        {
+            contexto.SaveChanges();
+        }
     }
 }
 
