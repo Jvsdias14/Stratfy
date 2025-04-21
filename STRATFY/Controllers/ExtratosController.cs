@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using STRATFY.Models;
 using STRATFY.Interfaces;
-using Microsoft.VisualBasic;
-using Microsoft.AspNetCore.Authorization;
-using System.Security.Cryptography.Xml;
 using STRATFY.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace STRATFY.Controllers
 {
@@ -22,7 +17,6 @@ namespace STRATFY.Controllers
         private readonly IRepositoryBase<Categoria> _categoriaRepository;
         private readonly RepositoryMovimentacao _movRepository;
         private readonly AppDbContext _context;
-        
 
         public ExtratosController(AppDbContext context, RepositoryExtrato extratoRepository, IRepositoryBase<Usuario> usuarioRepo, RepositoryMovimentacao movRepository, IRepositoryBase<Categoria> categoriaRepository)
         {
@@ -33,32 +27,24 @@ namespace STRATFY.Controllers
             _categoriaRepository = categoriaRepository;
         }
 
-
-        // GET: Extratos
         public async Task<IActionResult> Index()
         {
             var extratos = await _extratoRepository.SelecionarTodosAsync();
             return View(extratos);
         }
 
-        // GET: Extratos/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var extrato = _extratoRepository.CarregarExtratoCompleto(id.Value);
             if (extrato == null)
-            {
                 return NotFound();
-            }
 
             return View(extrato);
         }
 
-        // GET: Extratos/Create
         public IActionResult Create()
         {
             var usuarios = _usuarioRepository.SelecionarTodos();
@@ -66,23 +52,62 @@ namespace STRATFY.Controllers
             return View();
         }
 
-  
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("UsuarioId,Nome,DataCriacao")] Extrato extrato)
+        public async Task<IActionResult> Create([Bind("UsuarioId,Nome,DataCriacao")] Extrato extrato, IFormFile csvFile, string banco)
         {
             ModelState.Remove("Usuario");
+            ModelState.Remove("csvFile");
+
             if (ModelState.IsValid)
             {
                 extrato.DataCriacao = DateOnly.FromDateTime(DateTime.Now);
                 await _extratoRepository.IncluirAsync(extrato);
-                return RedirectToAction("Edit", "Extratos", new { id = extrato.Id });
+
+                if (csvFile != null && csvFile.Length > 0 && !string.IsNullOrEmpty(banco))
+                {
+                    using var memoryStream = new MemoryStream();
+                    await csvFile.CopyToAsync(memoryStream);
+                    var byteArrayContent = new ByteArrayContent(memoryStream.ToArray());
+
+                    using var httpClient = new HttpClient();
+                    using var form = new MultipartFormDataContent();
+                    form.Add(byteArrayContent, "file", csvFile.FileName);
+                    form.Add(new StringContent(banco), "banco");
+
+                    var response = await httpClient.PostAsync("http://localhost:8000/api/uploadcsv", form);
+
+                    var erro = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine("Erro ao enviar CSV para API: " + erro);
+
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var content = await response.Content.ReadAsStringAsync();
+                        var movimentacoes = JsonSerializer.Deserialize<List<Movimentacao>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                        if (movimentacoes != null && movimentacoes.Any())
+                        {
+                            foreach (var mov in movimentacoes)
+                            {
+                                mov.ExtratoId = extrato.Id;
+                                mov.Categoria = _context.Categoria.FirstOrDefault(c => c.Nome == "Outros");
+                                
+                                _movRepository.Incluir(mov);
+                            }
+                            _movRepository.Salvar();
+                        }
+                    }
+                }
+
+                return RedirectToAction("Edit", new { id = extrato.Id });
             }
+
             ViewData["UsuarioId"] = _extratoRepository.SelecionarChaveAsync(extrato.UsuarioId);
             return View(extrato);
         }
 
-        // GET: Extratos/Edit/5
+
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -107,15 +132,12 @@ namespace STRATFY.Controllers
                     CategoriaId = m.CategoriaId,
                     ExtratoId = m.ExtratoId,
                     DataMovimentacao = m.DataMovimentacao
-
                 }).ToList()
             };
 
             ViewData["CategoriaId"] = new SelectList(_categoriaRepository.SelecionarTodos(), "Id", "Nome");
-
             return View(viewModel);
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -128,38 +150,25 @@ namespace STRATFY.Controllers
             }
 
             var extrato = _extratoRepository.CarregarExtratoCompleto(model.ExtratoId);
-
             if (extrato == null)
-            {
                 return NotFound();
-            }
 
-            // Atualiza os dados do extrato
             extrato.Nome = model.NomeExtrato;
             extrato.DataCriacao = model.DataCriacao;
 
-            // Lista de IDs recebidos do form
             var idsRecebidos = model.Movimentacoes.Select(m => m.Id).ToList();
-
-            // REMOVE movimentações que existiam no banco mas não vieram no form
-            var movimentacoesRemovidas = extrato.Movimentacaos
-                .Where(m => !idsRecebidos.Contains(m.Id))
-                .ToList();
-
+            var movimentacoesRemovidas = extrato.Movimentacaos.Where(m => !idsRecebidos.Contains(m.Id)).ToList();
             _movRepository.RemoverVarias(movimentacoesRemovidas);
 
-            // Itera sobre cada movimentação recebida no form
             foreach (var mov in model.Movimentacoes)
             {
                 if (mov.Id == 0)
                 {
-                    // Nova movimentação
                     mov.ExtratoId = model.ExtratoId;
                     _movRepository.Incluir(mov);
                 }
                 else
                 {
-                    // Atualização
                     var movBanco = _movRepository.SelecionarChave(mov.Id);
                     if (movBanco != null)
                     {
@@ -175,23 +184,19 @@ namespace STRATFY.Controllers
             _extratoRepository.Salvar();
             return RedirectToAction(nameof(Index));
         }
+
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var extrato = _extratoRepository.CarregarExtratoCompleto(id.Value);
             if (extrato == null)
-            {
                 return NotFound();
-            }
 
             return View(extrato);
         }
 
-        // POST: Extratos/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -200,15 +205,14 @@ namespace STRATFY.Controllers
             try
             {
                 if (extrato != null)
-                {
                     _extratoRepository.Excluir(extrato);
-                }
+
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
                 TempData["DeleteError"] = "Não foi possível excluir o extrato porque ele possui movimentações vinculadas.";
-                return RedirectToAction(nameof(Delete), new { id }); // Redireciona de volta pra tela de confirmação de delete
+                return RedirectToAction(nameof(Delete), new { id });
             }
         }
     }

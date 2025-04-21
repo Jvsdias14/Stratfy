@@ -2,25 +2,48 @@
 
 @{
     ViewData["Title"] = "Criar Extrato";
+    var bancos = new List<SelectListItem>
+    {
+        new SelectListItem { Text = "Banco do Brasil", Value = "Banco do Brasil" },
+        new SelectListItem { Text = "Caixa Econômica", Value = "caixa" },
+        new SelectListItem { Text = "Itaú", Value = "itau" },
+        new SelectListItem { Text = "Nubank", Value = "nubank" },
+        new SelectListItem { Text = "Bradesco", Value = "bradesco" }
+    };
 }
 
 <div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
     <div class="p-5 shadow" style="background-color: #03045e; width: 100%; max-width: 500px; color: white; border-radius: 24px;">
         <h2 class="text-center mb-4">Cadastrar Extrato</h2>
 
-        <form asp-action="Create">
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-warning mb-3"></div>
+
             <div class="mb-3">
                 <label asp-for="UsuarioId" class="form-label">Usuário</label>
                 <select asp-for="UsuarioId" class="form-control rounded-3" asp-items="ViewBag.UsuarioId"></select>
                 <span asp-validation-for="UsuarioId" class="text-warning"></span>
             </div>
 
-
             <div class="mb-3">
                 <label asp-for="Nome" class="form-label"></label>
                 <input asp-for="Nome" class="form-control rounded-3" />
                 <span asp-validation-for="Nome" class="text-warning"></span>
+            </div>
+
+            <div class="mb-3">
+                <label for="Banco" class="form-label">Banco</label>
+                <select name="banco" class="form-control rounded-3">
+                    @foreach (var banco in bancos)
+                    {
+                        <option value="@banco.Value">@banco.Text</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="csvFile" class="form-label">Importar CSV</label>
+                <input type="file" name="csvFile" class="form-control" accept=".csv" />
             </div>
 
             <input type="hidden" asp-for="Id" />
