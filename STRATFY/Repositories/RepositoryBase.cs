@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using STRATFY.Helpers;
 using STRATFY.Interfaces;
 using STRATFY.Models;
 
@@ -6,6 +7,7 @@ namespace STRATFY.Repositories
 {
     public class RepositoryBase<T> : IRepositoryBase<T>, IDisposable where T : class
     {
+        
         public AppDbContext contexto;
         public bool saveChanges = true;
         DbSet<T> _dbSet;
@@ -14,6 +16,7 @@ namespace STRATFY.Repositories
         {
             contexto = context;
             saveChanges = pSaveChanges;
+            
         }
         public async Task<List<T>> SelecionarTodosAsync()
         {

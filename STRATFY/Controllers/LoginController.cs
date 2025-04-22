@@ -24,7 +24,8 @@ namespace STRATFY.Controllers
         [AllowAnonymous]
         public IActionResult Index(string returnUrl = null)
         {
-            if (!string.IsNullOrEmpty(returnUrl))
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+
             {
                 ViewData["Mensagem"] = "Você precisa estar logado para acessar essa página.";
             }
@@ -32,6 +33,7 @@ namespace STRATFY.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             return View("Login");
         }
+
 
 
         [HttpPost]
@@ -51,8 +53,10 @@ namespace STRATFY.Controllers
 
             var claims = new List<Claim>
             {
+                new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
                 new Claim(ClaimTypes.Name, usuario.Nome),
                 new Claim(ClaimTypes.Email, usuario.Email)
+
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -73,8 +77,9 @@ namespace STRATFY.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Index");
+            return RedirectToAction("Index", "Login");
         }
+
 
         [HttpGet]
         [AllowAnonymous]

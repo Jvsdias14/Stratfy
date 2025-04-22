@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using STRATFY.Models;
+using STRATFY.Repositories;
 
 namespace STRATFY.Controllers
 {
@@ -14,17 +15,21 @@ namespace STRATFY.Controllers
     public class DashboardsController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly RepositoryDashboard _dashboardRepository;
+        private readonly RepositoryExtrato _extratoRepository;
 
-        public DashboardsController(AppDbContext context)
+        public DashboardsController(AppDbContext context, RepositoryDashboard repositoryDashboard, RepositoryExtrato extratoRepository)
         {
             _context = context;
+            _dashboardRepository = repositoryDashboard;
+            _extratoRepository = extratoRepository;
         }
 
         // GET: Dashboards
         public async Task<IActionResult> Index()
         {
-            var appDbContext = _context.Dashboards.Include(d => d.Extrato);
-            return View(await appDbContext.ToListAsync());
+            var dashboards = await _dashboardRepository.SelecionarTodosDoUsuarioAsync();
+            return View(dashboards);
         }
 
         // GET: Dashboards/Details/5
@@ -48,20 +53,22 @@ namespace STRATFY.Controllers
 
         // GET: Dashboards/Create
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            var extratos = await _extratoRepository.SelecionarTodosDoUsuarioAsync();
+
             var model = new DashboardVM
             {
-                ExtratosDisponiveis = _context.Extratos
-                    .Select(e => new SelectListItem
-                    {
-                        Value = e.Id.ToString(),
-                        Text = e.Nome
-                    }).ToList()
+                ExtratosDisponiveis = extratos.Select(e => new SelectListItem
+                {
+                    Value = e.Id.ToString(),
+                    Text = e.Nome
+                }).ToList()
             };
 
             return View(model);
         }
+
 
 
         [HttpPost]

@@ -51,9 +51,6 @@ namespace STRATFY.Controllers
             return View();
         }
 
-        // POST: Usuarios/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> Create([Bind("Id,Nome,Email,Senha")] Usuario usuario)
@@ -62,7 +59,7 @@ namespace STRATFY.Controllers
             {
                 _context.Add(usuario);
                 await _context.SaveChangesAsync();
-                return RedirectToAction("Index","Dashboards");
+                return RedirectToAction("Index","Extratos");
             }
             return View(usuario);
         }

@@ -1,12 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using STRATFY.Helpers;
 using STRATFY.Models;
 
 namespace STRATFY.Repositories
 {
     public class RepositoryExtrato : RepositoryBase<Extrato>, IDisposable
     {
-        public RepositoryExtrato(AppDbContext context, bool pSaveChanges = true) : base(context, pSaveChanges)
+        private readonly UsuarioContexto usuarioContexto;
+        public RepositoryExtrato(AppDbContext context, UsuarioContexto usuariocontexto, bool pSaveChanges = true) : base(context, pSaveChanges)
         {
+            usuarioContexto = usuariocontexto;
         }
 
         public Extrato CarregarExtratoCompleto(int extratoId)
@@ -18,6 +21,14 @@ namespace STRATFY.Repositories
                 .FirstOrDefault(e => e.Id == extratoId);
 
             return extrato;
+        }
+
+        public async Task<List<Extrato>> SelecionarTodosDoUsuarioAsync()
+        {
+            var usuarioId = usuarioContexto.ObterUsuarioId();
+            return await contexto.Set<Extrato>()
+                .Where(e => e.UsuarioId == usuarioId)
+                .ToListAsync();
         }
         public void Dispose()
         {

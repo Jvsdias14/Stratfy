@@ -13,12 +13,12 @@ namespace STRATFY.Controllers
     public class ExtratosController : Controller
     {
         private readonly RepositoryExtrato _extratoRepository;
-        private readonly IRepositoryBase<Usuario> _usuarioRepository;
+        private readonly RepositoryUsuario _usuarioRepository;
         private readonly IRepositoryBase<Categoria> _categoriaRepository;
         private readonly RepositoryMovimentacao _movRepository;
         private readonly AppDbContext _context;
 
-        public ExtratosController(AppDbContext context, RepositoryExtrato extratoRepository, IRepositoryBase<Usuario> usuarioRepo, RepositoryMovimentacao movRepository, IRepositoryBase<Categoria> categoriaRepository)
+        public ExtratosController(AppDbContext context, RepositoryExtrato extratoRepository, RepositoryUsuario usuarioRepo, RepositoryMovimentacao movRepository, IRepositoryBase<Categoria> categoriaRepository)
         {
             _context = context;
             _extratoRepository = extratoRepository;
@@ -29,7 +29,7 @@ namespace STRATFY.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var extratos = await _extratoRepository.SelecionarTodosAsync();
+            var extratos = await _extratoRepository.SelecionarTodosDoUsuarioAsync();
             return View(extratos);
         }
 
@@ -47,20 +47,19 @@ namespace STRATFY.Controllers
 
         public IActionResult Create()
         {
-            var usuarios = _usuarioRepository.SelecionarTodos();
-            ViewData["UsuarioId"] = new SelectList(usuarios, "Id", "Nome");
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("UsuarioId,Nome,DataCriacao")] Extrato extrato, IFormFile csvFile, string banco)
+        public async Task<IActionResult> Create([Bind("Nome,DataCriacao")] Extrato extrato, IFormFile csvFile, string banco)
         {
             ModelState.Remove("Usuario");
             ModelState.Remove("csvFile");
 
             if (ModelState.IsValid)
             {
+                extrato.Usuario = await _usuarioRepository.ObterUsuarioLogado();
                 extrato.DataCriacao = DateOnly.FromDateTime(DateTime.Now);
                 await _extratoRepository.IncluirAsync(extrato);
 

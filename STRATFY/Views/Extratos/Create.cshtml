@@ -20,12 +20,6 @@
             <div asp-validation-summary="ModelOnly" class="text-warning mb-3"></div>
 
             <div class="mb-3">
-                <label asp-for="UsuarioId" class="form-label">Usuário</label>
-                <select asp-for="UsuarioId" class="form-control rounded-3" asp-items="ViewBag.UsuarioId"></select>
-                <span asp-validation-for="UsuarioId" class="text-warning"></span>
-            </div>
-
-            <div class="mb-3">
                 <label asp-for="Nome" class="form-label"></label>
                 <input asp-for="Nome" class="form-control rounded-3" />
                 <span asp-validation-for="Nome" class="text-warning"></span>
@@ -45,8 +39,6 @@
                 <label for="csvFile" class="form-label">Importar CSV</label>
                 <input type="file" name="csvFile" class="form-control" accept=".csv" />
             </div>
-
-            <input type="hidden" asp-for="Id" />
 
             <div class="d-flex justify-content-between mt-4">
                 <a asp-action="Index" class="btn btn-light rounded-pill">Voltar</a>

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using STRATFY.Helpers;
 using STRATFY.Interfaces;
 using STRATFY.Models;
 using STRATFY.Repositories;
@@ -18,13 +19,18 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 builder.Services.AddAuthorization();
 
+builder.Services.AddHttpContextAccessor(); // Necessário para acessar o usuário
+builder.Services.AddScoped<UsuarioContexto>();
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped(typeof(IRepositoryBase<>), typeof(RepositoryBase<>));
 builder.Services.AddScoped<RepositoryLogin>();
+builder.Services.AddScoped<RepositoryUsuario>();
 builder.Services.AddScoped<RepositoryExtrato>();
 builder.Services.AddScoped<RepositoryMovimentacao>();
+builder.Services.AddScoped<RepositoryDashboard>();
 
 builder.WebHost.UseUrls("http://localhost:5211");
 
@@ -51,6 +57,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Login}/{action=Index}/{id?}");
 
 app.Run();
