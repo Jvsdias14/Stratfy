@@ -5,53 +5,37 @@
 
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow rounded-4 border-0">
-                <div class="card-body p-4" style="background-color: #e0f7fa;">
-                    <h2 class="text-center mb-4">Entrar</h2>
+        <div class="col-md-6 rounded" style="background: #FFFFFF">
+            <h2 class="text-center">Entrar</h2>
+            <hr />
 
-                    @* Alerta de retorno ao tentar acessar página privada *@
-                    @if (!string.IsNullOrEmpty(ViewData["Mensagem"] as string))
-                    {
-                        <div class="alert alert-warning text-center" role="alert">
-                            @ViewData["Mensagem"]
-                        </div>
-                    }
-
-                    @* Somente mostra se houver erro de login *@
-                    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
-                    {
-                        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
-                    }
-
-                    <form asp-action="Login" method="post">
-                        <input type="hidden" name="ReturnUrl" value="@ViewData["ReturnUrl"]" />
-
-                        <div class="mb-3">
-                            <label asp-for="Email" class="form-label">Email</label>
-                            <input asp-for="Email" class="form-control rounded-3" />
-                            <span asp-validation-for="Email" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="Senha" class="form-label">Senha</label>
-                            <input asp-for="Senha" type="password" class="form-control rounded-3" />
-                            <span asp-validation-for="Senha" class="text-danger"></span>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center">
-                            <button type="submit" class="btn btn-primary rounded-pill px-4">Entrar</button>
-                            <a asp-action="Cadastrar" class="btn btn-outline-secondary rounded-pill">Cadastrar-se</a>
-                        </div>
-                    </form>
+            @if (ViewData["Mensagem"] != null)
+            {
+                <div class="alert alert-warning text-center">
+                    @ViewData["Mensagem"]
                 </div>
-            </div>
+            }
+
+            <form asp-action="Login" method="post">
+                <input type="hidden" name="ReturnUrl" value="@ViewData["ReturnUrl"]" />
+
+                <div class="form-group mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Senha" class="form-label"></label>
+                    <input asp-for="Senha" class="form-control" type="password" />
+                    <span asp-validation-for="Senha" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <input type="submit" value="Entrar" class="btn btn-primary" />
+                    <a asp-action="Cadastrar" class="btn btn-outline-secondary">Cadastrar-se</a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}

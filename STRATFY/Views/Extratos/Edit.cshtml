@@ -13,20 +13,20 @@
 }
 
 <div class="d-flex justify-content-center align-items-center" style="min-height: 90vh;">
-    <div class="p-5 shadow" style="background-color: #03045e; width: 100%; max-width: 900px; color: white; border-radius: 24px;">
+    <div class="p-5 shadow" style="background-color: #03045e; width: 100%; max-width: 1250px; color: white; border-radius: 24px;">
         <h2 class="text-center mb-4">Editar Extrato</h2>
 
         <form asp-action="Edit" method="post">
             <input type="hidden" asp-for="ExtratoId" />
 
             <div class="mb-3">
-                <label asp-for="NomeExtrato" class="form-label"></label>
+                <label asp-for="NomeExtrato" class="form-label">Nome do Extrato</label>
                 <input asp-for="NomeExtrato" class="form-control rounded-3" />
                 <span asp-validation-for="NomeExtrato" class="text-warning"></span>
             </div>
 
             <div class="mb-4">
-                <label asp-for="DataCriacao" class="form-label"></label>
+                <label asp-for="DataCriacao" class="form-label">Data de Criação</label>
                 <input asp-for="DataCriacao" class="form-control rounded-3" type="date" />
                 <span asp-validation-for="DataCriacao" class="text-warning"></span>
             </div>
@@ -51,10 +51,10 @@
                                 <input type="hidden" name="Movimentacoes[@i].Id" value="@Model.Movimentacoes[i].Id" />
                                 <input type="hidden" name="Movimentacoes[@i].ExtratoId" value="@Model.ExtratoId" />
 
-                                <td><input class="form-control rounded-3" name="Movimentacoes[@i].Descricao" value="@Model.Movimentacoes[i].Descricao" /></td>
-                                <td><input class="form-control rounded-3" name="Movimentacoes[@i].Valor" value="@Model.Movimentacoes[i].Valor" /></td>
+                                <td><input class="form-control rounded-3 conteudo" name="Movimentacoes[@i].Descricao" value="@Model.Movimentacoes[i].Descricao" /></td>
+                                <td><input class="form-control rounded-3 conteudo" name="Movimentacoes[@i].Valor" value="@Model.Movimentacoes[i].Valor" /></td>
                                 <td>
-                                    <select name="Movimentacoes[@i].Tipo" class="form-control rounded-3">
+                                    <select name="Movimentacoes[@i].Tipo" class="form-control rounded-3 conteudo">
                                         @foreach (var item in tipos)
                                         {
                                             <option value="@item.Value" selected="@(item.Value == Model.Movimentacoes[i].Tipo)">
@@ -64,7 +64,7 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <select class="form-control rounded-3" name="Movimentacoes[@i].CategoriaId">
+                                    <select class="form-control rounded-3 conteudo" name="Movimentacoes[@i].CategoriaId">
                                         @foreach (var categoria in categorias)
                                         {
                                             <option value="@categoria.Value" selected="@(categoria.Value == Model.Movimentacoes[i].CategoriaId.ToString())">
@@ -134,7 +134,7 @@
                 <td><input class="form-control rounded-3" name="Movimentacoes[${indice}].Descricao" /></td>
                 <td><input class="form-control rounded-3" name="Movimentacoes[${indice}].Valor" /></td>
                 <td>
-                    <select class="form-control rounded-3" name="Movimentacoes[${indice}].Tipo">
+                    <select class="form-control rounded-3 conteudo" name="Movimentacoes[${indice}].Tipo">
                         <option value="Débito">Débito</option>
                         <option value="Crédito">Crédito</option>
                         <option value="Dinheiro">Dinheiro</option>
