@@ -68,6 +68,8 @@ input.form-control-color {
 
 .table-light {
     --bs-table-bg: #0077b6;
+    text-align:center;
+    color:white
 }
 
 .col-md-6 {
@@ -111,3 +113,49 @@ input.form-control-color {
 .title{
     color: white
 }
+
+.conteudo {
+    width: auto;
+    min-width: 1ch;
+    padding: 0.375rem 0.75rem; /* igual do Bootstrap */
+}
+
+.sidebar {
+    background-color: #03045e;
+    width: 250px;
+    transition: all 0.3s ease-in-out;
+}
+
+    .sidebar.d-none {
+        display: none !important;
+    }
+
+#toggleSidebar {
+    position: fixed;
+    top: 15px;
+    left: 260px;
+    z-index: 1050;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#toggleSidebar {
+    position: fixed;
+    top: 15px;
+    left: 260px;
+    z-index: 1050;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
