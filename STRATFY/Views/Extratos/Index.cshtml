@@ -9,7 +9,7 @@
         <h1 class="mb-0 title">Extratos</h1>
     </div>
     <div class="text-end" style="min-width: 160px;">
-        <a asp-action="Create" class="btn btn-outline-info">Criar Extrato</a>
+        <a asp-action="Create" class="btn btn-light rounded-pill">Criar Extrato</a>
     </div>
 </div>
 
@@ -17,13 +17,13 @@
     @foreach (var item in Model)
     {
         <div class="col-sm-12 col-md-6 col-lg-4 mb-4">
-            <div class="card h-100 shadow-sm" style="border-radius:16px; border:solid 1px #00b4d8">
+            <div class="feature-card">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">@item.Nome</h5>
                     <p class="card-text mb-1"><strong>Data de Criação:</strong> @item.DataCriacao.ToString("dd/MM/yyyy")</p>
 
                     <div class="mt-auto">
-                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm me-2">Detalhes</a>
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm me-2">Detalhes e Movimentações</a>
                         <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm">Excluir</a>
                     </div>
                 </div>

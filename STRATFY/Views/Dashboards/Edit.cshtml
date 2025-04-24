@@ -21,72 +21,76 @@
             </div>
 
             <div class="row">
-                <div class="col-md-6">
-                    <h4 class="mb-3 text-info">Gráficos</h4>
-                    <table class="table table-sm table-dark table-bordered rounded shadow-sm" id="tabelaGraficos">
-                        <thead class="table-secondary text-dark">
-                            <tr>
-                                <th>Título</th>
-                                <th>Eixo X</th>
-                                <th>Eixo Y</th>
-                                <th>Tipo</th>
-                                <th>Cor</th>
-                                <th>Legenda</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for (int i = 0; i < Model.Graficos.Count; i++)
-                            {
+                <div class="col-md-6 mb-4">
+                    <h4 class="mb-3 text-info fw-bold">Gráficos</h4>
+                    <div class="table-responsive border border-primary rounded shadow-sm p-2 bg-white">
+                        <table class="table table-sm text-center align-middle mb-0" id="tabelaGraficos">
+                            <thead class="bg-turquesa text-dark rounded-top">
                                 <tr>
-                                    <td><input name="Graficos[@i].Titulo" value="@Model.Graficos[i].Titulo" class="form-control form-control-sm" /></td>
-                                    <td><input name="Graficos[@i].Campo1" value="@Model.Graficos[i].Campo1" class="form-control form-control-sm" /></td>
-                                    <td><input name="Graficos[@i].Campo2" value="@Model.Graficos[i].Campo2" class="form-control form-control-sm" /></td>
-                                    <td><input name="Graficos[@i].Tipo" value="@Model.Graficos[i].Tipo" class="form-control form-control-sm" /></td>
-                                    <td><input type="color" name="Graficos[@i].Cor" value="@Model.Graficos[i].Cor" class="form-control form-control-sm" /></td>
-                                    <td class="text-center">
-                                        <input type="checkbox" name="Graficos[@i].AtivarLegenda" value="true" @(Model.Graficos[i].AtivarLegenda ? "checked" : "") />
-                                    </td>
-                                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">🗑️</button></td>
+                                    <th>Título</th>
+                                    <th>Eixo X</th>
+                                    <th>Eixo Y</th>
+                                    <th>Tipo</th>
+                                    <th>Cor</th>
+                                    <th>Legenda</th>
+                                    <th></th>
                                 </tr>
-                            }
-                        </tbody>
-                    </table>
-                    <button type="button" class="btn btn-light btn-sm mt-2" onclick="adicionarGrafico()">+ Adicionar Gráfico</button>
+                            </thead>
+                            <tbody class="bg-azul-gelo">
+                                @for (int i = 0; i < Model.Graficos.Count; i++)
+                                {
+                                    <tr>
+                                        <td><input name="Graficos[@i].Titulo" value="@Model.Graficos[i].Titulo" class="form-control form-control-sm rounded" /></td>
+                                        <td><input name="Graficos[@i].Campo1" value="@Model.Graficos[i].Campo1" class="form-control form-control-sm rounded" /></td>
+                                        <td><input name="Graficos[@i].Campo2" value="@Model.Graficos[i].Campo2" class="form-control form-control-sm rounded" /></td>
+                                        <td><input name="Graficos[@i].Tipo" value="@Model.Graficos[i].Tipo" class="form-control form-control-sm rounded" /></td>
+                                        <td><input type="color" name="Graficos[@i].Cor" value="@Model.Graficos[i].Cor" class="form-control form-control-sm rounded" /></td>
+                                        <td><input type="checkbox" name="Graficos[@i].AtivarLegenda" value="true" @(Model.Graficos[i].AtivarLegenda ? "checked" : "") /></td>
+                                        <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">🗑️</button></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="button" class="btn btn-light rounded-pill mt-2" onclick="adicionarGrafico()">+ Adicionar Gráfico</button>
                 </div>
 
-                <div class="col-md-6">
-                    <h4 class="mb-3 text-info">Cartões</h4>
-                    <table class="table table-sm table-dark table-bordered rounded shadow-sm" id="tabelaCartoes">
-                        <thead class="table-secondary text-dark">
-                            <tr>
-                                <th>Nome</th>
-                                <th>Campo</th>
-                                <th>Agregação</th>
-                                <th>Cor</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for (int i = 0; i < Model.Cartoes.Count; i++)
-                            {
+                <div class="col-md-6 mb-4">
+                    <h4 class="mb-3 text-info fw-bold">Cartões</h4>
+                    <div class="table-responsive border border-primary rounded shadow-sm p-2 bg-white">
+                        <table class="table table-sm text-center align-middle mb-0" id="tabelaCartoes">
+                            <thead class="bg-turquesa text-dark">
                                 <tr>
-                                    <td><input name="Cartoes[@i].Nome" value="@Model.Cartoes[i].Nome" class="form-control form-control-sm" /></td>
-                                    <td><input name="Cartoes[@i].Campo" value="@Model.Cartoes[i].Campo" class="form-control form-control-sm" /></td>
-                                    <td><input name="Cartoes[@i].TipoAgregacao" value="@Model.Cartoes[i].TipoAgregacao" class="form-control form-control-sm" /></td>
-                                    <td><input type="color" name="Cartoes[@i].Cor" value="@Model.Cartoes[i].Cor" class="form-control form-control-sm" /></td>
-                                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">🗑️</button></td>
+                                    <th>Nome</th>
+                                    <th>Campo</th>
+                                    <th>Agregação</th>
+                                    <th>Cor</th>
+                                    <th></th>
                                 </tr>
-                            }
-                        </tbody>
-                    </table>
-                    <button type="button" class="btn btn-light btn-sm mt-2" onclick="adicionarCartao()">+ Adicionar Cartão</button>
+                            </thead>
+                            <tbody class="bg-azul-gelo">
+                                @for (int i = 0; i < Model.Cartoes.Count; i++)
+                                {
+                                    <tr>
+                                        <td><input name="Cartoes[@i].Nome" value="@Model.Cartoes[i].Nome" class="form-control form-control-sm rounded" /></td>
+                                        <td><input name="Cartoes[@i].Campo" value="@Model.Cartoes[i].Campo" class="form-control form-control-sm rounded" /></td>
+                                        <td><input name="Cartoes[@i].TipoAgregacao" value="@Model.Cartoes[i].TipoAgregacao" class="form-control form-control-sm rounded" /></td>
+                                        <td><input type="color" name="Cartoes[@i].Cor" value="@Model.Cartoes[i].Cor" class="form-control form-control-sm rounded" /></td>
+                                        <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">🗑️</button></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="button" class="btn btn-light rounded-pill mt-2" onclick="adicionarCartao()">+ Adicionar Cartão</button>
                 </div>
             </div>
 
+
+
             <div class="mt-4 d-flex justify-content-between">
-                <a asp-action="Index" class="btn btn-outline-light rounded-pill">Voltar</a>
-                <button type="submit" class="btn rounded-pill" style="background-color: #00b4d8; color: white;">Salvar Alterações</button>
+                <a asp-action="Index" class="btn btn-light rounded-pill">Voltar</a>
+                <button type="submit" class="btn btn-light rounded-pill">Salvar Alterações</button>
             </div>
         </form>
     </div>

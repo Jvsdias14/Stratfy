@@ -5,7 +5,7 @@
 
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-6 rounded" style="background: #FFFFFF">
+        <div class="col-md-6" style="background: #FFFFFF; border-radius:20px">
             <h2 class="text-center">Entrar</h2>
             <hr />
 
@@ -31,9 +31,13 @@
                     <span asp-validation-for="Senha" class="text-danger"></span>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mb-3">
+@*                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <input type="submit" value="Entrar" class="btn btn-primary" />
                     <a asp-action="Cadastrar" class="btn btn-outline-secondary">Cadastrar-se</a>
+                </div> *@
+                <div class="d-flex justify-content-between mt-4">
+                    <input type="submit" value="Entrar" class="btn rounded-pill" style="background-color: #00b4d8; color: white;"></>
+                    <a asp-action="Cadastrar" class="btn rounded-pill" style="background-color: #00b4d8; color: white;">Cadastrar-se</a>
                 </div>
             </form>
         </div>

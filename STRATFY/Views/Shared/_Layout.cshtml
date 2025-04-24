@@ -19,7 +19,7 @@
 </head>
 <body>
     <div class="d-flex">
-        <nav class="sidebar p-3 d-flex flex-column h-100">
+        <nav class="sidebar">
             <div class="d-flex justify-content-center mb-4">
                 <a asp-area="" asp-controller="Home" asp-action="Index">
                     <img class="img-logo" src="~/Images/Stratfy_Logo06.png" alt="Stratfy Logo" />
@@ -36,9 +36,11 @@
                     <a class="nav-link btn btn-info mb-2 text-white" asp-area="" asp-controller="Dashboards" asp-action="Index">Dashboards</a>
                 </li>
             </ul>
-            <form asp-controller="Login" asp-action="Logout" method="post" class="mt-auto">
-                <button type="submit" class="btn btn-outline-danger w-100">Sair</button>
-            </form>
+            <div class="text-center mb-3">
+                <form asp-controller="Login" asp-action="Logout" method="post">
+                    <button type="submit" class="btn btn-outline-danger" style="width:100px">Sair</button>
+                </form>
+            </div>
         </nav>
 
        
