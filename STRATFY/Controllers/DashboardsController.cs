@@ -201,7 +201,7 @@ namespace STRATFY.Controllers
 
         // GET: Dashboards/Edit/5
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
             var dashboard = _context.Dashboards
                 .Include(d => d.Graficos)
@@ -218,7 +218,14 @@ namespace STRATFY.Controllers
                 ExtratoId = dashboard.ExtratoId,
                 Graficos = dashboard.Graficos.ToList(),
                 Cartoes = dashboard.Cartoes.ToList(),
-                ExtratosDisponiveis = ObterListaExtratos()
+            };
+            var extratos = await _extratoRepository.SelecionarTodosDoUsuarioAsync();
+            {
+                model.ExtratosDisponiveis = extratos.Select(e => new SelectListItem
+                {
+                    Value = e.Id.ToString(),
+                    Text = e.Nome
+                }).ToList();
             };
 
             return View(model);

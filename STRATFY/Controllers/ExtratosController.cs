@@ -153,25 +153,51 @@ namespace STRATFY.Controllers
                 return NotFound();
 
             extrato.Nome = model.NomeExtrato;
-   
+
+            // Processe as movimentações
             var idsRecebidos = model.Movimentacoes.Select(m => m.Id).ToList();
             var movimentacoesRemovidas = extrato.Movimentacaos.Where(m => !idsRecebidos.Contains(m.Id)).ToList();
             _movRepository.RemoverVarias(movimentacoesRemovidas);
 
+            // Buscar todas as categorias existentes uma vez só
+            var todasCategorias = _context.Categoria.ToList();
+            var categoriasMap = new Dictionary<string, Categoria>(StringComparer.OrdinalIgnoreCase);
+
+            // Popula o dicionário de forma segura, evitando duplicações
+            foreach (var cat in todasCategorias)
+            {
+                // Se já existe uma categoria com este nome (case insensitive), não adiciona novamente
+                if (!categoriasMap.ContainsKey(cat.Nome.Trim()))
+                {
+                    categoriasMap[cat.Nome.Trim()] = cat;
+                }
+            }
+
             foreach (var mov in model.Movimentacoes)
             {
-                if (!string.IsNullOrWhiteSpace(mov.Categoria?.Nome))
+                if (mov.Categoria != null && !string.IsNullOrWhiteSpace(mov.Categoria.Nome))
                 {
-                    var categoria = _context.Categoria.FirstOrDefault(c => c.Nome.ToLower() == mov.Categoria.Nome.ToLower());
+                    string categoriaNome = mov.Categoria.Nome.Trim();
 
-                    if (categoria == null)
+                    // Verifica se a categoria já existe (de forma case insensitive)
+                    if (categoriasMap.TryGetValue(categoriaNome, out var categoriaExistente))
                     {
-                        categoria = new Categoria { Nome = mov.Categoria.Nome };
-                        _context.Categoria.Add(categoria);
-                        _context.SaveChanges();
+                        mov.CategoriaId = categoriaExistente.Id;
                     }
+                    else
+                    {
+                        // Categoria não existe, cria uma nova
+                        var novaCategoria = new Categoria { Nome = categoriaNome };
+                        _context.Categoria.Add(novaCategoria);
 
-                    mov.CategoriaId = categoria.Id;
+                        // Força o contexto a gerar um ID temporário
+                        _context.Entry(novaCategoria).State = EntityState.Added;
+
+                        // Adiciona ao nosso mapa para uso futuro neste mesmo request
+                        categoriasMap[categoriaNome] = novaCategoria;
+
+                        mov.CategoriaId = novaCategoria.Id;
+                    }
                 }
 
                 if (mov.Id == 0)
@@ -193,10 +219,10 @@ namespace STRATFY.Controllers
                 }
             }
 
+            // Salva tudo de uma vez ao final
             _extratoRepository.Salvar();
             return RedirectToAction(nameof(Index));
         }
-
 
         public async Task<IActionResult> Delete(int? id)
         {
