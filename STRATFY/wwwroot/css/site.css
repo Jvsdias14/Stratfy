@@ -247,6 +247,9 @@ input.form-control-color {
 
     .feature-card:hover {
         transform: translateY(-5px);
+        transform: scale(1.01);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
     }
 
 .feature-title {
@@ -275,4 +278,40 @@ input.form-control-color {
 .table th {
     vertical-align: middle;
     padding: 0.5rem;
+}
+
+#wrapper {
+    transition: all 0.3s ease;
+}
+
+.sidebar {
+    width: 250px;
+    transition: width 0.3s ease;
+}
+
+#wrapper.toggled .sidebar {
+    width: 0;
+    overflow: hidden;
+}
+
+#wrapper .content {
+    transition: all 0.3s ease;
+    width: calc(100% - 250px);
+}
+
+#wrapper.toggled .content {
+    width: 100%;
+}
+
+/* Botão flutuante fixo para toggle */
+#toggleSidebar {
+    position: absolute;
+    top: 20px;
+    left: 260px;
+    z-index: 1000;
+    transition: left 0.3s ease;
+}
+
+#wrapper.toggled #toggleSidebar {
+    left: 10px;
 }
