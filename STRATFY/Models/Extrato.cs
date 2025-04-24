@@ -10,11 +10,11 @@ public partial class Extrato
     [Key]
     public int Id { get; set; }
 
-    [Required]
     [ForeignKey("Usuario")]
     public int UsuarioId { get; set; }
-    public virtual Usuario? Usuario { get; set; } 
+    public virtual Usuario? Usuario { get; set; }
 
+    [Required(ErrorMessage = "O campo Nome é obrigatório")]
     public string Nome { get; set; } = null!;
 
     public DateOnly DataCriacao { get; set; }

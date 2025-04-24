@@ -13,6 +13,7 @@
             <div class="mb-4">
                 <label asp-for="Nome" class="form-label">Nome da Dashboard</label>
                 <input asp-for="Nome" class="form-control rounded-3" />
+                <span asp-validation-for="Nome" class="text-warning"></span>
             </div>
 
             <div class="mb-4">
@@ -22,7 +23,11 @@
 
             <div class="row">
                 <div class="col-md-6 mb-4">
-                    <h4 class="mb-3 text-info fw-bold">Gráficos</h4>
+                    <!-- Título e botão de Gráficos alinhados -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h4 class="mb-0">Gráficos</h4>
+                        <button type="button" class="btn btn-light rounded-pill" onclick="adicionarGrafico()">+ Adicionar Gráfico</button>
+                    </div>
                     <div class="table-responsive border border-primary rounded shadow-sm p-2 bg-white">
                         <table class="table table-sm text-center align-middle mb-0" id="tabelaGraficos">
                             <thead class="bg-turquesa text-dark rounded-top">
@@ -52,11 +57,14 @@
                             </tbody>
                         </table>
                     </div>
-                    <button type="button" class="btn btn-light rounded-pill mt-2" onclick="adicionarGrafico()">+ Adicionar Gráfico</button>
                 </div>
 
                 <div class="col-md-6 mb-4">
-                    <h4 class="mb-3 text-info fw-bold">Cartões</h4>
+                    <!-- Título e botão de Cartões alinhados -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h4 class="mb-0">Cartões</h4>
+                        <button type="button" class="btn btn-light rounded-pill" onclick="adicionarCartao()">+ Adicionar Cartão</button>
+                    </div>
                     <div class="table-responsive border border-primary rounded shadow-sm p-2 bg-white">
                         <table class="table table-sm text-center align-middle mb-0" id="tabelaCartoes">
                             <thead class="bg-turquesa text-dark">
@@ -82,11 +90,8 @@
                             </tbody>
                         </table>
                     </div>
-                    <button type="button" class="btn btn-light rounded-pill mt-2" onclick="adicionarCartao()">+ Adicionar Cartão</button>
                 </div>
             </div>
-
-
 
             <div class="mt-4 d-flex justify-content-between">
                 <a asp-action="Index" class="btn btn-light rounded-pill">Voltar</a>
@@ -107,15 +112,15 @@
             const tabela = document.querySelector("#tabelaGraficos tbody");
             const index = tabela.rows.length;
             const novaLinha = `
-                        <tr>
-                            <td><input name="Graficos[${index}].Titulo" class="form-control form-control-sm" /></td>
-                            <td><input name="Graficos[${index}].Campo1" class="form-control form-control-sm" /></td>
-                            <td><input name="Graficos[${index}].Campo2" class="form-control form-control-sm" /></td>
-                            <td><input name="Graficos[${index}].Tipo" class="form-control form-control-sm" /></td>
-                            <td><input type="color" name="Graficos[${index}].Cor" class="form-control form-control-sm" value="#3366cc" /></td>
-                            <td class="text-center"><input type="checkbox" name="Graficos[${index}].AtivarLegenda" value="true" /></td>
-                            <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">🗑️</button></td>
-                        </tr>`;
+                                <tr>
+                                    <td><input name="Graficos[${index}].Titulo" class="form-control form-control-sm" /></td>
+                                    <td><input name="Graficos[${index}].Campo1" class="form-control form-control-sm" /></td>
+                                    <td><input name="Graficos[${index}].Campo2" class="form-control form-control-sm" /></td>
+                                    <td><input name="Graficos[${index}].Tipo" class="form-control form-control-sm" /></td>
+                                    <td><input type="color" name="Graficos[${index}].Cor" class="form-control form-control-sm" value="#3366cc" /></td>
+                                    <td class="text-center"><input type="checkbox" name="Graficos[${index}].AtivarLegenda" value="true" /></td>
+                                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">🗑️</button></td>
+                                </tr>`;
             tabela.insertAdjacentHTML("beforeend", novaLinha);
         }
 
@@ -123,13 +128,13 @@
             const tabela = document.querySelector("#tabelaCartoes tbody");
             const index = tabela.rows.length;
             const novaLinha = `
-                        <tr>
-                            <td><input name="Cartoes[${index}].Nome" class="form-control form-control-sm" /></td>
-                            <td><input name="Cartoes[${index}].Campo" class="form-control form-control-sm" /></td>
-                            <td><input name="Cartoes[${index}].TipoAgregacao" class="form-control form-control-sm" /></td>
-                            <td><input type="color" name="Cartoes[${index}].Cor" class="form-control form-control-sm" value="#3366cc" /></td>
-                            <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">🗑️</button></td>
-                        </tr>`;
+                                <tr>
+                                    <td><input name="Cartoes[${index}].Nome" class="form-control form-control-sm" /></td>
+                                    <td><input name="Cartoes[${index}].Campo" class="form-control form-control-sm" /></td>
+                                    <td><input name="Cartoes[${index}].TipoAgregacao" class="form-control form-control-sm" /></td>
+                                    <td><input type="color" name="Cartoes[${index}].Cor" class="form-control form-control-sm" value="#3366cc" /></td>
+                                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">🗑️</button></td>
+                                </tr>`;
             tabela.insertAdjacentHTML("beforeend", novaLinha);
         }
     </script>

@@ -11,9 +11,16 @@
 
             @if (ViewData["Mensagem"] != null)
             {
+                if (ViewData["Mensagem"].ToString() == "Você precisa estar logado para acessar essa página.") {
                 <div class="alert alert-warning text-center">
                     @ViewData["Mensagem"]
                 </div>
+                }
+                else{
+                    <div class="alert alert-danger text-center">
+                        @ViewData["Mensagem"]
+                    </div>
+                }
             }
 
             <form asp-action="Login" method="post">

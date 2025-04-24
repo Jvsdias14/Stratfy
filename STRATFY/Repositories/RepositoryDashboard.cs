@@ -17,6 +17,7 @@ namespace STRATFY.Repositories
             var usuarioId = usuarioContexto.ObterUsuarioId();
             return await contexto.Set<Dashboard>()
                 .Where(e => e.Extrato.UsuarioId == usuarioId)
+                .OrderByDescending(e => e.Id)
                 .ToListAsync();
         }
         public void Dispose()

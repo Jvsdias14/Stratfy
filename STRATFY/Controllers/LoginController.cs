@@ -47,6 +47,7 @@ namespace STRATFY.Controllers
 
             if (usuario == null)
             {
+                ViewData["Mensagem"] = "Email ou senha inválidos.";
                 ModelState.AddModelError("", "Email ou senha inválidos.");
                 return View("Login", model);
             }

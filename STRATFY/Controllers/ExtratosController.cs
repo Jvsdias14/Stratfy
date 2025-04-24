@@ -153,8 +153,7 @@ namespace STRATFY.Controllers
                 return NotFound();
 
             extrato.Nome = model.NomeExtrato;
-            extrato.DataCriacao = model.DataCriacao;
-
+   
             var idsRecebidos = model.Movimentacoes.Select(m => m.Id).ToList();
             var movimentacoesRemovidas = extrato.Movimentacaos.Where(m => !idsRecebidos.Contains(m.Id)).ToList();
             _movRepository.RemoverVarias(movimentacoesRemovidas);
