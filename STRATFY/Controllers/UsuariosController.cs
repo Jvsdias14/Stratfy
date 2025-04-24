@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using STRATFY.Models;
+using STRATFY.Repositories;
 
 namespace STRATFY.Controllers
 {
@@ -14,10 +15,12 @@ namespace STRATFY.Controllers
     public class UsuariosController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly RepositoryUsuario _usuarioRepository;
 
-        public UsuariosController(AppDbContext context)
+        public UsuariosController(AppDbContext context, RepositoryUsuario repositoryUsuario)
         {
             _context = context;
+            _usuarioRepository = repositoryUsuario;
         }
 
         // GET: Usuarios
@@ -65,20 +68,16 @@ namespace STRATFY.Controllers
         }
 
         // GET: Usuarios/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit()
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            var usuario = await _usuarioRepository.ObterUsuarioLogado();
 
-            var usuario = await _context.Usuarios.FindAsync(id);
             if (usuario == null)
-            {
-                return NotFound();
-            }
+                return RedirectToAction("Index", "Login");
+
             return View(usuario);
         }
+
 
         // POST: Usuarios/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.

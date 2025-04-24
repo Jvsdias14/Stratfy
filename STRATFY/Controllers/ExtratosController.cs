@@ -52,7 +52,7 @@ namespace STRATFY.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Nome,DataCriacao")] Extrato extrato, IFormFile csvFile, string banco)
+        public async Task<IActionResult> Create([Bind("Nome,DataCriacao")] Extrato extrato, IFormFile csvFile)
         {
             ModelState.Remove("Usuario");
             ModelState.Remove("csvFile");
@@ -63,7 +63,7 @@ namespace STRATFY.Controllers
                 extrato.DataCriacao = DateOnly.FromDateTime(DateTime.Now);
                 await _extratoRepository.IncluirAsync(extrato);
 
-                if (csvFile != null && csvFile.Length > 0 && !string.IsNullOrEmpty(banco))
+                if (csvFile != null && csvFile.Length > 0)
                 {
                     using var memoryStream = new MemoryStream();
                     await csvFile.CopyToAsync(memoryStream);
@@ -72,7 +72,6 @@ namespace STRATFY.Controllers
                     using var httpClient = new HttpClient();
                     using var form = new MultipartFormDataContent();
                     form.Add(byteArrayContent, "file", csvFile.FileName);
-                    form.Add(new StringContent(banco), "banco");
 
                     var response = await httpClient.PostAsync("http://localhost:8000/api/uploadcsv", form);
 
@@ -128,7 +127,7 @@ namespace STRATFY.Controllers
                     Descricao = m.Descricao,
                     Valor = m.Valor,
                     Tipo = m.Tipo,
-                    CategoriaId = m.CategoriaId,
+                    Categoria = m.Categoria,
                     ExtratoId = m.ExtratoId,
                     DataMovimentacao = m.DataMovimentacao
                 }).ToList()
@@ -142,6 +141,7 @@ namespace STRATFY.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(ExtratoEdicaoViewModel model)
         {
+            ModelState.Remove("CategoriaId"); // se necessário
             if (!ModelState.IsValid)
             {
                 ViewData["CategoriaId"] = new SelectList(_categoriaRepository.SelecionarTodos(), "Id", "Nome");
@@ -161,6 +161,20 @@ namespace STRATFY.Controllers
 
             foreach (var mov in model.Movimentacoes)
             {
+                if (!string.IsNullOrWhiteSpace(mov.Categoria?.Nome))
+                {
+                    var categoria = _context.Categoria.FirstOrDefault(c => c.Nome.ToLower() == mov.Categoria.Nome.ToLower());
+
+                    if (categoria == null)
+                    {
+                        categoria = new Categoria { Nome = mov.Categoria.Nome };
+                        _context.Categoria.Add(categoria);
+                        _context.SaveChanges();
+                    }
+
+                    mov.CategoriaId = categoria.Id;
+                }
+
                 if (mov.Id == 0)
                 {
                     mov.ExtratoId = model.ExtratoId;
@@ -183,6 +197,7 @@ namespace STRATFY.Controllers
             _extratoRepository.Salvar();
             return RedirectToAction(nameof(Index));
         }
+
 
         public async Task<IActionResult> Delete(int? id)
         {

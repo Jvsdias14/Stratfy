@@ -70,7 +70,7 @@ if dashboard_id:
                         if graf["tipo"].lower() == "barra":
                             st.bar_chart(df.groupby(campo1)[campo2].sum(), color = graf["cor"].lower())
                         elif graf["tipo"].lower() == "pizza":
-                            dados = df.groupby(campo1)[campo2].sum()
+                            dados = df.groupby(campo1)[campo2].sum().abs()
                             fig, ax = plt.subplots()
                             ax.pie(dados, labels=dados.index, autopct='%1.1f%%', startangle=90)
                             ax.axis('equal')

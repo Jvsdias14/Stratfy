@@ -1,39 +1,132 @@
-﻿@model STRATFY.Models.Dashboard
+﻿@model DashboardVM
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Editar Dashboard";
 }
 
-<h1>Alterar</h1>
+<div class="d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="p-5 shadow" style="background-color: #03045e; width: 100%; max-width: 1200px; color: white; border-radius: 24px;">
+        <h2 class="text-center mb-4">Editar Dashboard</h2>
 
-<h4>Dashboard</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <form asp-action="Edit" method="post">
             <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="ExtratoId" class="control-label"></label>
-                <select asp-for="ExtratoId" class="form-control" asp-items="ViewBag.ExtratoId"></select>
-                <span asp-validation-for="ExtratoId" class="text-danger"></span>
+            <div class="mb-4">
+                <label asp-for="Nome" class="form-label">Nome da Dashboard</label>
+                <input asp-for="Nome" class="form-control rounded-3" />
             </div>
-            <div class="form-group">
-                <label asp-for="Descricao" class="control-label"></label>
-                <input asp-for="Descricao" class="form-control" />
-                <span asp-validation-for="Descricao" class="text-danger"></span>
+
+            <div class="mb-4">
+                <label asp-for="ExtratoId" class="form-label">Extrato</label>
+                <select asp-for="ExtratoId" asp-items="Model.ExtratosDisponiveis" class="form-control rounded-3"></select>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Salvar" class="btn btn-primary" />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <h4 class="mb-3 text-info">Gráficos</h4>
+                    <table class="table table-sm table-dark table-bordered rounded shadow-sm" id="tabelaGraficos">
+                        <thead class="table-secondary text-dark">
+                            <tr>
+                                <th>Título</th>
+                                <th>Eixo X</th>
+                                <th>Eixo Y</th>
+                                <th>Tipo</th>
+                                <th>Cor</th>
+                                <th>Legenda</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.Graficos.Count; i++)
+                            {
+                                <tr>
+                                    <td><input name="Graficos[@i].Titulo" value="@Model.Graficos[i].Titulo" class="form-control form-control-sm" /></td>
+                                    <td><input name="Graficos[@i].Campo1" value="@Model.Graficos[i].Campo1" class="form-control form-control-sm" /></td>
+                                    <td><input name="Graficos[@i].Campo2" value="@Model.Graficos[i].Campo2" class="form-control form-control-sm" /></td>
+                                    <td><input name="Graficos[@i].Tipo" value="@Model.Graficos[i].Tipo" class="form-control form-control-sm" /></td>
+                                    <td><input type="color" name="Graficos[@i].Cor" value="@Model.Graficos[i].Cor" class="form-control form-control-sm" /></td>
+                                    <td class="text-center">
+                                        <input type="checkbox" name="Graficos[@i].AtivarLegenda" value="true" @(Model.Graficos[i].AtivarLegenda ? "checked" : "") />
+                                    </td>
+                                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">🗑️</button></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <button type="button" class="btn btn-light btn-sm mt-2" onclick="adicionarGrafico()">+ Adicionar Gráfico</button>
+                </div>
+
+                <div class="col-md-6">
+                    <h4 class="mb-3 text-info">Cartões</h4>
+                    <table class="table table-sm table-dark table-bordered rounded shadow-sm" id="tabelaCartoes">
+                        <thead class="table-secondary text-dark">
+                            <tr>
+                                <th>Nome</th>
+                                <th>Campo</th>
+                                <th>Agregação</th>
+                                <th>Cor</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.Cartoes.Count; i++)
+                            {
+                                <tr>
+                                    <td><input name="Cartoes[@i].Nome" value="@Model.Cartoes[i].Nome" class="form-control form-control-sm" /></td>
+                                    <td><input name="Cartoes[@i].Campo" value="@Model.Cartoes[i].Campo" class="form-control form-control-sm" /></td>
+                                    <td><input name="Cartoes[@i].TipoAgregacao" value="@Model.Cartoes[i].TipoAgregacao" class="form-control form-control-sm" /></td>
+                                    <td><input type="color" name="Cartoes[@i].Cor" value="@Model.Cartoes[i].Cor" class="form-control form-control-sm" /></td>
+                                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">🗑️</button></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <button type="button" class="btn btn-light btn-sm mt-2" onclick="adicionarCartao()">+ Adicionar Cartão</button>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-between">
+                <a asp-action="Index" class="btn btn-outline-light rounded-pill">Voltar</a>
+                <button type="submit" class="btn rounded-pill" style="background-color: #00b4d8; color: white;">Salvar Alterações</button>
             </div>
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Voltar</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function removerLinha(botao) {
+            const linha = botao.closest("tr");
+            linha.remove();
+        }
+
+        function adicionarGrafico() {
+            const tabela = document.querySelector("#tabelaGraficos tbody");
+            const index = tabela.rows.length;
+            const novaLinha = `
+                        <tr>
+                            <td><input name="Graficos[${index}].Titulo" class="form-control form-control-sm" /></td>
+                            <td><input name="Graficos[${index}].Campo1" class="form-control form-control-sm" /></td>
+                            <td><input name="Graficos[${index}].Campo2" class="form-control form-control-sm" /></td>
+                            <td><input name="Graficos[${index}].Tipo" class="form-control form-control-sm" /></td>
+                            <td><input type="color" name="Graficos[${index}].Cor" class="form-control form-control-sm" value="#3366cc" /></td>
+                            <td class="text-center"><input type="checkbox" name="Graficos[${index}].AtivarLegenda" value="true" /></td>
+                            <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">🗑️</button></td>
+                        </tr>`;
+            tabela.insertAdjacentHTML("beforeend", novaLinha);
+        }
+
+        function adicionarCartao() {
+            const tabela = document.querySelector("#tabelaCartoes tbody");
+            const index = tabela.rows.length;
+            const novaLinha = `
+                        <tr>
+                            <td><input name="Cartoes[${index}].Nome" class="form-control form-control-sm" /></td>
+                            <td><input name="Cartoes[${index}].Campo" class="form-control form-control-sm" /></td>
+                            <td><input name="Cartoes[${index}].TipoAgregacao" class="form-control form-control-sm" /></td>
+                            <td><input type="color" name="Cartoes[${index}].Cor" class="form-control form-control-sm" value="#3366cc" /></td>
+                            <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">🗑️</button></td>
+                        </tr>`;
+            tabela.insertAdjacentHTML("beforeend", novaLinha);
+        }
+    </script>
 }

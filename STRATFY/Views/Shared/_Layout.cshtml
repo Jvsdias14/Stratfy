@@ -11,7 +11,7 @@
     <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.2.2/datatables.min.css" rel="stylesheet" integrity="sha384-WMi+Ec+QE8hxW/3qKvuefShIddYjwMalSgy0MR4FZnl285C4HGYfISceaagw0Am3" crossorigin="anonymous">
         <style>
         body {
-            background-color: #0077b6 !important;
+            background-color: #00B4D8 !important;
             margin: 0;
             overflow-x: hidden;
         }
@@ -27,30 +27,21 @@
             </div>
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a class="nav-link btn btn-info mb-2 text-white" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                    <a class="nav-link btn btn-info mb-2 text-white" asp-area="" asp-controller="Usuarios" asp-action="Edit">Minha Conta</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link btn btn-info mb-2 text-white" asp-area="" asp-controller="Extratos" asp-action="Index">Extratos</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link btn btn-info mb-2 text-white" asp-area="" asp-controller="Categorias" asp-action="Index">Categorias</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link btn btn-info mb-2 text-white" asp-area="" asp-controller="Movimentacoes" asp-action="Index">Movimentações</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link btn btn-info mb-2 text-white" asp-area="" asp-controller="Dashboards" asp-action="Index">Dashboards</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link btn btn-info mb-2 text-white" asp-area="" asp-controller="Graficos" asp-action="Index">Gráficos</a>
-                </li>
             </ul>
-
             <form asp-controller="Login" asp-action="Logout" method="post" class="mt-auto">
                 <button type="submit" class="btn btn-outline-danger w-100">Sair</button>
             </form>
         </nav>
 
+       
         <!-- Botão fixo fora da div .content -->
         <button id="toggleSidebar" class="btn">
             <i class="bi bi-chevron-left"></i>

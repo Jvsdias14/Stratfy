@@ -34,6 +34,13 @@
             <h4 class="text-center">Movimentações</h4>
             <div class="table-responsive rounded" style="background-color: white; color: black; padding: 0.5rem; border-radius: 16px; overflow-x: auto;">
                 <table class="table table-bordered align-middle mb-0" id="movimentacoes-table" style="table-layout: auto; width: 100%;">
+                    <datalist id="categorias-lista">
+                        @foreach (var categoria in categorias)
+                        {
+                            <option value="@categoria.Text"></option>
+                        }
+                    </datalist>
+
                     <thead class="table-light">
                         <tr>
                             <th>Descrição</th>
@@ -64,15 +71,11 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <select class="form-control rounded-3 conteudo" name="Movimentacoes[@i].CategoriaId">
-                                        @foreach (var categoria in categorias)
-                                        {
-                                            <option value="@categoria.Value" selected="@(categoria.Value == Model.Movimentacoes[i].CategoriaId.ToString())">
-                                                @categoria.Text
-                                            </option>
-                                        }
-                                    </select>
+                                    <input list="categorias-lista" class="form-control rounded-3 conteudo"
+                                           name="Movimentacoes[@i].Categoria.Nome"
+                                           value="@Model.Movimentacoes[i].Categoria?.Nome" />
                                 </td>
+
                                 <td>
                                     <input class="form-control rounded-3" type="date" name="Movimentacoes[@i].DataMovimentacao"
                                            value="@Model.Movimentacoes[i].DataMovimentacao?.ToString("yyyy-MM-dd")" />
@@ -142,13 +145,9 @@
                     </select>
                 </td>
                 <td>
-                    <select class="form-control rounded-3" name="Movimentacoes[${indice}].CategoriaId">
-        @foreach (var categoria in categorias)
-        {
-                                <option value="@categoria.Value">@categoria.Text</option>
-        }
-                    </select>
-                </td>
+            <input list="categorias-lista" class="form-control rounded-3" name="Movimentacoes[${indice}].Categoria.Nome" />
+                 </td>
+
                 <td><input class="form-control rounded-3" type="date" name="Movimentacoes[${indice}].DataMovimentacao" /></td>
                 <td><button type="button" class="btn btn-outline-danger btn-sm" onclick="removerLinha(this)">Remover</button></td>
             `;

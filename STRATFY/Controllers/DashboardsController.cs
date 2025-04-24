@@ -76,27 +76,27 @@ namespace STRATFY.Controllers
         {
             if (action == "padrao")
             {
-                // Redireciona para a action CriarPadrao (já existente)
                 return RedirectToAction("CriarPadrao", new { nome = model.Nome, extratoId = model.ExtratoId });
             }
-
-            // Criação personalizada
+            ModelState.Remove("ExtratosDisponiveis");
             if (!ModelState.IsValid)
+            {
+                model.ExtratosDisponiveis = ObterListaExtratos();
                 return View(model);
+            }
 
             var dashboard = new Dashboard
             {
                 Descricao = model.Nome,
-                ExtratoId = model.ExtratoId,
-                Graficos = model.Graficos,
-                Cartoes = model.Cartoes
+                ExtratoId = model.ExtratoId
             };
 
             _context.Dashboards.Add(dashboard);
             _context.SaveChanges();
 
-            return RedirectToAction("Details", new { id = dashboard.Id });
+            return RedirectToAction("Edit", new { id = dashboard.Id });
         }
+
 
 
         // Botão Criar Dash Padrão
@@ -199,59 +199,80 @@ namespace STRATFY.Controllers
             }).ToList();
         }
 
-
         // GET: Dashboards/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        [HttpGet]
+        public IActionResult Edit(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            var dashboard = _context.Dashboards
+                .Include(d => d.Graficos)
+                .Include(d => d.Cartoes)
+                .FirstOrDefault(d => d.Id == id);
 
-            var dashboard = await _context.Dashboards.FindAsync(id);
             if (dashboard == null)
-            {
                 return NotFound();
-            }
-            ViewData["ExtratoId"] = new SelectList(_context.Extratos, "Id", "Id", dashboard.ExtratoId);
-            return View(dashboard);
+
+            var model = new DashboardVM
+            {
+                Id = dashboard.Id,
+                Nome = dashboard.Descricao,
+                ExtratoId = dashboard.ExtratoId,
+                Graficos = dashboard.Graficos.ToList(),
+                Cartoes = dashboard.Cartoes.ToList(),
+                ExtratosDisponiveis = ObterListaExtratos()
+            };
+
+            return View(model);
         }
 
         // POST: Dashboards/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,ExtratoId,Descricao")] Dashboard dashboard)
+        public async Task<IActionResult> Edit(DashboardVM model)
         {
-            if (id != dashboard.Id)
+            // Preenche os campos que causam falha na validação ANTES de validar o ModelState
+            var dashboardbanco = _dashboardRepository.SelecionarChave(model.Id);
+
+            foreach (var grafico in model.Graficos)
             {
-                return NotFound();
+                grafico.Dashboard = dashboardbanco;
+                ModelState.Remove($"Graficos[{model.Graficos.IndexOf(grafico)}].Dashboard");
             }
 
-            if (ModelState.IsValid)
+            foreach (var cartao in model.Cartoes)
             {
-                try
-                {
-                    _context.Update(dashboard);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!DashboardExists(dashboard.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                cartao.Dashboard = dashboardbanco;
+                ModelState.Remove($"Cartoes[{model.Cartoes.IndexOf(cartao)}].Dashboard");
             }
-            ViewData["ExtratoId"] = new SelectList(_context.Extratos, "Id", "Id", dashboard.ExtratoId);
-            return View(dashboard);
+
+            ModelState.Remove("ExtratosDisponiveis");
+
+            if (!ModelState.IsValid)
+            {
+                model.ExtratosDisponiveis = ObterListaExtratos();
+                return View(model);
+            }
+
+            var dashboard = _context.Dashboards
+                .Include(d => d.Graficos)
+                .Include(d => d.Cartoes)
+                .FirstOrDefault(d => d.Id == model.Id);
+
+            if (dashboard == null)
+                return NotFound();
+
+            dashboard.Descricao = model.Nome;
+            dashboard.ExtratoId = model.ExtratoId;
+
+            dashboard.Graficos = model.Graficos;
+            dashboard.Cartoes = model.Cartoes;
+
+            _context.Update(dashboard);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Details", new { id = dashboard.Id });
         }
+
+
+
 
         // GET: Dashboards/Delete/5
         public async Task<IActionResult> Delete(int? id)
