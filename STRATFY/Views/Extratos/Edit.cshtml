@@ -26,8 +26,28 @@
             </div>
 
             <h4 class="text-center">Movimentações</h4>
+
+            <!-- Busca e filtros -->
+            <div class="row mb-3">
+                <div class="col-md-6 mb-2">
+                    <input type="text" id="searchInput" class="form-control rounded-3" placeholder="Buscar movimentações..." />
+                </div>
+                <div class="col-md-3 mb-2">
+                    <select id="filterTipo" class="form-control rounded-3">
+                        <option value="">Todos os Tipos</option>
+                        <option value="Débito">Débito</option>
+                        <option value="Crédito">Crédito</option>
+                        <option value="Dinheiro">Dinheiro</option>
+                        <option value="Pix">Pix</option>
+                    </select>
+                </div>
+                <div class="col-md-3 text-end">
+                    <button id="btnAdicionar" type="button" class="btn btn-light rounded-pill" onclick="adicionarLinha()">+ Adicionar Movimentação</button>
+                </div>
+            </div>
+
             <div class="table-responsive rounded" style="background-color: white; color: black; padding: 0.5rem; border-radius: 16px; overflow-x: auto;">
-                <table class="table table-bordered align-middle mb-0" id="movimentacoes-table" style="table-layout: auto; width: 100%;">
+                <table class="table table-bordered align-middle mb-0" id="movimentacoes-table" style="width: 100%;">
                     <datalist id="categorias-lista">
                         @foreach (var categoria in categorias)
                         {
@@ -48,14 +68,14 @@
                     <tbody>
                         @for (int i = 0; i < Model.Movimentacoes.Count; i++)
                         {
-                            <tr>
+                            <tr class="movimentacao-row">
                                 <input type="hidden" name="Movimentacoes[@i].Id" value="@Model.Movimentacoes[i].Id" />
                                 <input type="hidden" name="Movimentacoes[@i].ExtratoId" value="@Model.ExtratoId" />
 
-                                <td><input class="form-control rounded-3 conteudo" name="Movimentacoes[@i].Descricao" value="@Model.Movimentacoes[i].Descricao" /></td>
+                                <td><input class="form-control rounded-3 searchable-field" name="Movimentacoes[@i].Descricao" value="@Model.Movimentacoes[i].Descricao" /></td>
                                 <td><input class="form-control rounded-3" name="Movimentacoes[@i].Valor" value="@Model.Movimentacoes[i].Valor" /></td>
                                 <td>
-                                    <select name="Movimentacoes[@i].Tipo" class="form-control rounded-3 conteudo">
+                                    <select name="Movimentacoes[@i].Tipo" class="form-control rounded-3 tipo-field">
                                         @foreach (var item in tipos)
                                         {
                                             <option value="@item.Value" selected="@(item.Value == Model.Movimentacoes[i].Tipo)">
@@ -65,7 +85,7 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <input list="categorias-lista" class="form-control rounded-3 conteudo"
+                                    <input list="categorias-lista" class="form-control rounded-3 searchable-field"
                                            name="Movimentacoes[@i].Categoria.Nome"
                                            value="@Model.Movimentacoes[i].Categoria?.Nome" />
                                 </td>
@@ -81,10 +101,50 @@
                         }
                     </tbody>
                 </table>
-            </div>
 
-            <div class="text-end mt-3">
-                <button type="button" class="btn btn-light rounded-pill" onclick="adicionarLinha()">+ Adicionar Movimentação</button>
+                <!-- Paginação -->
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div>
+                        <span id="info-paginacao">Exibindo <span id="inicio-registros">1</span>-<span id="fim-registros">10</span> de <span id="total-registros">0</span> registros</span>
+                    </div>
+                    <div>
+                        <label for="registrosPorPagina">Registros por página:</label>
+                        <select id="registrosPorPagina" class="form-select-sm ms-2">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+                    <div>
+                        <nav aria-label="Navegação de páginas">
+                            <ul class="pagination pagination-sm mb-0">
+                                <li class="page-item disabled" id="btn-primeira">
+                                    <a class="page-link" href="#" aria-label="Primeira">
+                                        <span aria-hidden="true">&laquo;&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item disabled" id="btn-anterior">
+                                    <a class="page-link" href="#" aria-label="Anterior">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <!-- Páginas dinâmicas serão adicionadas via JavaScript -->
+                                <li class="page-item" id="btn-proxima">
+                                    <a class="page-link" href="#" aria-label="Próxima">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item" id="btn-ultima">
+                                    <a class="page-link" href="#" aria-label="Última">
+                                        <span aria-hidden="true">&raquo;&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
             </div>
 
             <div class="d-flex justify-content-between mt-4">
@@ -97,16 +157,84 @@
 
 @section Scripts {
     <script>
+        // Variáveis de controle da paginação
+        let paginaAtual = 1;
+        let registrosPorPagina = 10;
+        let totalPaginas = 1;
+        let indice = 0; // Será inicializado com o valor correto no ready
+
+        $(document).ready(function() {
+            // Inicializar o contador com o número atual de linhas
+            indice = $('.movimentacao-row').length;
+
+            // Configurar a paginação inicial
+            atualizarPaginacao();
+
+            // Eventos de paginação
+            $("#registrosPorPagina").change(function() {
+                registrosPorPagina = parseInt($(this).val());
+                paginaAtual = 1; // Voltar para a primeira página
+                atualizarPaginacao();
+            });
+
+            // Eventos de busca e filtro
+            $("#searchInput").on("keyup", function() {
+                paginaAtual = 1; // Voltar para a primeira página ao buscar
+                atualizarPaginacao();
+            });
+
+            $("#filterTipo").change(function() {
+                paginaAtual = 1; // Voltar para a primeira página ao filtrar
+                atualizarPaginacao();
+            });
+
+            // Eventos de navegação
+            $("#btn-primeira").click(function(e) {
+                e.preventDefault();
+                if (!$(this).hasClass("disabled")) {
+                    paginaAtual = 1;
+                    atualizarPaginacao();
+                }
+            });
+
+            $("#btn-anterior").click(function(e) {
+                e.preventDefault();
+                if (!$(this).hasClass("disabled")) {
+                    paginaAtual--;
+                    atualizarPaginacao();
+                }
+            });
+
+            $("#btn-proxima").click(function(e) {
+                e.preventDefault();
+                if (!$(this).hasClass("disabled")) {
+                    paginaAtual++;
+                    atualizarPaginacao();
+                }
+            });
+
+            $("#btn-ultima").click(function(e) {
+                e.preventDefault();
+                if (!$(this).hasClass("disabled")) {
+                    paginaAtual = totalPaginas;
+                    atualizarPaginacao();
+                }
+            });
+        });
+
+        // Função para remover linha
         function removerLinha(botao) {
             const linha = $(botao).closest('tr');
             linha.remove();
             reindexarTabela();
+            atualizarPaginacao();
         }
 
+        // Função para reindexar os campos do formulário
         function reindexarTabela() {
-            const linhas = $('#movimentacoes-table tbody tr');
-            linhas.each(function (index) {
-                $(this).find('input, select').each(function () {
+            const linhas = $('.movimentacao-row');
+            linhas.each(function(index) {
+                $(this).find('input, select').each(function() {
                     const name = $(this).attr('name');
                     if (name) {
                         const novoName = name.replace(/Movimentacoes\[\d+\]/, `Movimentacoes[${index}]`);
@@ -115,39 +243,167 @@
                 });
             });
 
-            indice = linhas.length; // atualiza o índice para o próximo adicionarLinha
+            // Atualizar o índice global para novas linhas
+            indice = linhas.length;
         }
 
-
-        let indice = @Model.Movimentacoes.Count;
-
+        // Função para adicionar nova linha
         function adicionarLinha() {
-            const tabela = document.querySelector('#movimentacoes-table tbody');
-            const novaLinha = document.createElement('tr');
+            const tbody = $('#movimentacoes-table tbody');
+            const extratoId = $('#ExtratoId').val();
 
-            novaLinha.innerHTML = `
-                <input type="hidden" name="Movimentacoes[${indice}].Id" value="0" />
-                <input type="hidden" name="Movimentacoes[${indice}].ExtratoId" value="@Model.ExtratoId" />
-                <td><input class="form-control rounded-3" name="Movimentacoes[${indice}].Descricao" /></td>
-                <td><input class="form-control rounded-3" name="Movimentacoes[${indice}].Valor" /></td>
-                <td>
-                    <select class="form-control rounded-3 conteudo" name="Movimentacoes[${indice}].Tipo">
-                        <option value="Débito">Débito</option>
-                        <option value="Crédito">Crédito</option>
-                        <option value="Dinheiro">Dinheiro</option>
-                        <option value="Pix">Pix</option>
-                    </select>
-                </td>
-                <td>
-            <input list="categorias-lista" class="form-control rounded-3" name="Movimentacoes[${indice}].Categoria.Nome" />
-                 </td>
-
-                <td><input class="form-control rounded-3" type="date" name="Movimentacoes[${indice}].DataMovimentacao" /></td>
-                <td><button type="button" class="btn btn-outline-danger btn-sm" onclick="removerLinha(this)">Remover</button></td>
+            const novaLinha = `
+                <tr class="movimentacao-row">
+                    <input type="hidden" name="Movimentacoes[${indice}].Id" value="0" />
+                    <input type="hidden" name="Movimentacoes[${indice}].ExtratoId" value="${extratoId}" />
+                    <td><input class="form-control rounded-3 searchable-field" name="Movimentacoes[${indice}].Descricao" /></td>
+                    <td><input class="form-control rounded-3" name="Movimentacoes[${indice}].Valor" /></td>
+                    <td>
+                        <select class="form-control rounded-3 tipo-field" name="Movimentacoes[${indice}].Tipo">
+                            <option value="Débito">Débito</option>
+                            <option value="Crédito">Crédito</option>
+                            <option value="Dinheiro">Dinheiro</option>
+                            <option value="Pix">Pix</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input list="categorias-lista" class="form-control rounded-3 searchable-field" name="Movimentacoes[${indice}].Categoria.Nome" />
+                    </td>
+                    <td><input class="form-control rounded-3" type="date" name="Movimentacoes[${indice}].DataMovimentacao" /></td>
+                    <td><button type="button" class="btn btn-outline-danger btn-sm" onclick="removerLinha(this)">Remover</button></td>
+                </tr>
             `;
 
-            tabela.appendChild(novaLinha);
+            // Adicionar a nova linha ao final da tabela
+            tbody.append(novaLinha);
             indice++;
+
+            // Ir para a última página e atualizar a paginação
+            const totalRegistros = $('.movimentacao-row').length;
+            totalPaginas = Math.ceil(totalRegistros / registrosPorPagina);
+            paginaAtual = totalPaginas;
+
+            atualizarPaginacao();
+
+            // Focar no primeiro campo da nova linha
+            tbody.find('tr:last-child td:first-child input').focus();
+        }
+
+        // Função para atualizar a paginação
+        function atualizarPaginacao() {
+            // Aplicar filtros para determinar quais linhas devem ser visíveis
+            aplicarFiltros();
+
+            // Obter todas as linhas que passaram pelos filtros
+            const linhasFiltradas = $(".movimentacao-row.filtrado");
+            const totalRegistros = linhasFiltradas.length;
+
+            // Calcular total de páginas
+            totalPaginas = Math.ceil(totalRegistros / registrosPorPagina);
+            if (totalPaginas === 0) totalPaginas = 1;
+
+            // Ajustar página atual se necessário
+            if (paginaAtual > totalPaginas) {
+                paginaAtual = totalPaginas;
+            }
+
+            // Esconder todas as linhas primeiro
+            $(".movimentacao-row").hide();
+
+            // Mostrar apenas as linhas filtradas da página atual
+            const inicio = (paginaAtual - 1) * registrosPorPagina;
+            const fim = inicio + registrosPorPagina;
+
+            linhasFiltradas.slice(inicio, fim).show();
+
+            // Atualizar informações de paginação
+            $("#total-registros").text(totalRegistros);
+            $("#inicio-registros").text(totalRegistros > 0 ? inicio + 1 : 0);
+            $("#fim-registros").text(Math.min(fim, totalRegistros));
+
+            // Atualizar estado dos botões de navegação
+            $("#btn-primeira, #btn-anterior").toggleClass("disabled", paginaAtual === 1);
+            $("#btn-proxima, #btn-ultima").toggleClass("disabled", paginaAtual === totalPaginas);
+
+            // Atualizar números de página
+            atualizarNumerosPagina();
+        }
+
+        // Função para aplicar filtros e marcar linhas filtradas
+        function aplicarFiltros() {
+            const termoBusca = $("#searchInput").val().toLowerCase();
+            const tipoFiltro = $("#filterTipo").val();
+
+            // Remover classe de filtro anterior
+            $(".movimentacao-row").removeClass("filtrado");
+
+            // Aplicar filtros
+            $(".movimentacao-row").each(function() {
+                const linha = $(this);
+                let mostrar = true;
+
+                // Aplicar filtro de busca
+                if (termoBusca) {
+                    const textoLinha = linha.find(".searchable-field").map(function() {
+                        return $(this).val() ? $(this).val().toLowerCase() : "";
+                    }).get().join(" ");
+
+                    if (!textoLinha.includes(termoBusca)) {
+                        mostrar = false;
+                    }
+                }
+
+                // Aplicar filtro por tipo
+                if (tipoFiltro && mostrar) {
+                    const tipoValor = linha.find(".tipo-field").val();
+
+                    if (tipoValor !== tipoFiltro) {
+                        mostrar = false;
+                    }
+                }
+
+                // Marcar linha como filtrada se passou pelos filtros
+                if (mostrar) {
+                    linha.addClass("filtrado");
+                }
+            });
+        }
+
+        // Função para atualizar os números de páginas na paginação
+        function atualizarNumerosPagina() {
+            // Remover páginas existentes, exceto os botões de navegação
+            $(".page-item:not(#btn-primeira):not(#btn-anterior):not(#btn-proxima):not(#btn-ultima)").remove();
+
+            // Se tiver apenas uma página, mostrar só ela
+            if (totalPaginas <= 1) {
+                const pageItem = $(`<li class="page-item active"><a class="page-link" href="#">1</a></li>`);
+                pageItem.insertBefore($("#btn-proxima"));
+                return;
+            }
+
+            // Determinar quantas páginas mostrar (máximo 5)
+            let inicioRange = Math.max(1, paginaAtual - 2);
+            let fimRange = Math.min(totalPaginas, inicioRange + 4);
+
+            // Ajustar para sempre mostrar 5 páginas quando possível
+            if (fimRange - inicioRange < 4 && totalPaginas > 4) {
+                inicioRange = Math.max(1, fimRange - 4);
+            }
+
+            // Inserir antes do botão próxima
+            for (let i = inicioRange; i <= fimRange; i++) {
+                const active = i === paginaAtual ? "active" : "";
+                const pageItem = $(`<li class="page-item ${active}"><a class="page-link" href="#">${i}</a></li>`);
+
+                pageItem.insertBefore($("#btn-proxima"));
+
+                // Adicionar evento de clique
+                pageItem.click(function(e) {
+                    e.preventDefault();
+                    paginaAtual = i;
+                    atualizarPaginacao();
+                });
+            }
         }
     </script>
 }

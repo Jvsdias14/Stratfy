@@ -315,3 +315,22 @@ input.form-control-color {
 #wrapper.toggled #toggleSidebar {
     left: 10px;
 }
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    background-color: #0077b6 !important;
+    color: white !important;
+    border-radius: 8px;
+    padding: 5px 10px;
+    margin: 0 2px;
+}
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background-color: #023e8a !important;
+        font-weight: bold;
+    }
+
+.dataTables_filter input {
+    border-radius: 8px;
+    border: 1px solid #0077b6;
+    padding: 6px;
+}
