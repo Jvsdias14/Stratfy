@@ -15,17 +15,22 @@ public partial class Movimentacao
     public int ExtratoId { get; set; }
     public virtual Extrato ?Extrato { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "O campo Categoria é obrigatório")]
     [ForeignKey("Categoria")]
     public int CategoriaId { get; set; }
+
     public virtual Categoria ?Categoria { get; set; }
 
+    [Required(ErrorMessage = "O campo Descrição é obrigatório")]
     public string? Descricao { get; set; }
 
+    [Required(ErrorMessage = "O campo Tipo é obrigatório")]
     public string Tipo { get; set; } = null!;
 
+    [Required(ErrorMessage = "O campo Valor é obrigatório")]
     public decimal Valor { get; set; }
 
+    [Required(ErrorMessage = "O campo Data é obrigatório")]
     public DateOnly? DataMovimentacao { get; set; }
 
 

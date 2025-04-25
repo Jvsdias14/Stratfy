@@ -175,30 +175,27 @@ namespace STRATFY.Controllers
 
             foreach (var mov in model.Movimentacoes)
             {
-                if (mov.Categoria != null && !string.IsNullOrWhiteSpace(mov.Categoria.Nome))
+                if (mov.CategoriaId == 0 && mov.Categoria != null && !string.IsNullOrWhiteSpace(mov.Categoria.Nome))
                 {
                     string categoriaNome = mov.Categoria.Nome.Trim();
 
-                    // Verifica se a categoria já existe (de forma case insensitive)
                     if (categoriasMap.TryGetValue(categoriaNome, out var categoriaExistente))
                     {
                         mov.CategoriaId = categoriaExistente.Id;
                     }
                     else
                     {
-                        // Categoria não existe, cria uma nova
                         var novaCategoria = new Categoria { Nome = categoriaNome };
                         _context.Categoria.Add(novaCategoria);
+                        await _context.SaveChangesAsync(); // necessário para obter o ID
 
-                        // Força o contexto a gerar um ID temporário
-                        _context.Entry(novaCategoria).State = EntityState.Added;
-
-                        // Adiciona ao nosso mapa para uso futuro neste mesmo request
                         categoriasMap[categoriaNome] = novaCategoria;
-
                         mov.CategoriaId = novaCategoria.Id;
                     }
                 }
+
+                // 🔒 Previne que o EF tente adicionar categoria manualmente
+                mov.Categoria = null;
 
                 if (mov.Id == 0)
                 {

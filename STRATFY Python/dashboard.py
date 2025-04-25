@@ -27,8 +27,8 @@ if dashboard_id:
         st.sidebar.header("Filtros")
 
         # Filtro por data
-        if "datamovimentacao" in df.columns:
-            datas = pd.to_datetime(df["datamovimentacao"])
+        if "data" in df.columns:
+            datas = pd.to_datetime(df["data"])
             data_inicio = st.sidebar.date_input("Data inicial", datas.min())
             data_fim = st.sidebar.date_input("Data final", datas.max())
             df = df[(datas >= pd.to_datetime(data_inicio)) & (datas <= pd.to_datetime(data_fim))]

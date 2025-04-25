@@ -117,7 +117,7 @@ namespace STRATFY.Controllers
 
             var graficosPadrao = new List<Grafico>
     {
-        new Grafico { Titulo = "Gasto diário", Campo1 = "DataMovimentacao", Campo2 = "Valor", Tipo = "Barra", Cor = "#3366cc", AtivarLegenda = false },
+        new Grafico { Titulo = "Gasto diário", Campo1 = "Datamovimentacao", Campo2 = "Valor", Tipo = "Barra", Cor = "#3366cc", AtivarLegenda = false },
         new Grafico { Titulo = "Gasto por categoria", Campo1 = "Categoria", Campo2 = "Valor", Tipo = "Pizza", Cor = "#3366cc", AtivarLegenda = false }
     };
 

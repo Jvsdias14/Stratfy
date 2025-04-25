@@ -334,3 +334,31 @@ input.form-control-color {
     border: 1px solid #0077b6;
     padding: 6px;
 }
+.categoria-select-container {
+    position: relative;
+}
+
+.categoria-dropdown {
+    display: none;
+    max-height: 200px;
+    overflow-y: auto;
+    width: 100%;
+    z-index: 1000;
+}
+
+    .categoria-dropdown.show {
+        display: block;
+    }
+
+.categoria-option {
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+}
+
+    .categoria-option:hover {
+        background-color: #f8f9fa;
+    }
+
+    .categoria-option.highlight {
+        background-color: #e9ecef;
+    }

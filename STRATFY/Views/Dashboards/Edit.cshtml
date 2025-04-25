@@ -2,6 +2,32 @@
 
 @{
     ViewData["Title"] = "Editar Dashboard";
+    
+    // Opções para os eixos dos gráficos e campo dos cartões
+    var opcoesEixos = new List<SelectListItem>
+    {
+        new SelectListItem { Value = "DataMovimentacao", Text = "Data" },
+        new SelectListItem { Value = "Valor", Text = "Valor" },
+        new SelectListItem { Value = "Tipo", Text = "Tipo" },
+        new SelectListItem { Value = "Categoria", Text = "Categoria" }
+    };
+    
+    // Opções para tipos de gráfico
+    var opcoesTipoGrafico = new List<SelectListItem>
+    {
+        new SelectListItem { Value = "Barra", Text = "Barra" },
+        new SelectListItem { Value = "Pizza", Text = "Pizza" }
+    };
+    
+    // Opções para tipos de agregação
+    var opcoesAgregacao = new List<SelectListItem>
+    {
+        new SelectListItem { Value = "Soma", Text = "Soma" },
+        new SelectListItem { Value = "Média", Text = "Média" },
+        new SelectListItem { Value = "Máximo", Text = "Máximo" },
+        new SelectListItem { Value = "Mínimo", Text = "Mínimo" },
+        new SelectListItem { Value = "Contagem", Text = "Contagem" }
+    };
 }
 
 <div class="d-flex justify-content-center align-items-center" style="min-height: 100vh;">
@@ -30,6 +56,14 @@
                     </div>
                     <div class="table-responsive border border-primary rounded shadow-sm p-2 bg-white">
                         <table class="table table-sm text-center align-middle mb-0" id="tabelaGraficos">
+                            <colgroup>
+                                <col style="width: 30%">
+                                <col style="width: 26%">
+                                <col style="width: 26%">
+                                <col style="width: 15%">
+                                <col style="width: 1%">
+                                <col style="width: 1%">
+                            </colgroup>
                             <thead class="bg-turquesa text-dark rounded-top">
                                 <tr>
                                     <th>Título</th>
@@ -37,7 +71,6 @@
                                     <th>Eixo Y</th>
                                     <th>Tipo</th>
                                     <th>Cor</th>
-                                    <th>Legenda</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -46,11 +79,31 @@
                                 {
                                     <tr>
                                         <td><input name="Graficos[@i].Titulo" value="@Model.Graficos[i].Titulo" class="form-control form-control-sm rounded" /></td>
-                                        <td><input name="Graficos[@i].Campo1" value="@Model.Graficos[i].Campo1" class="form-control form-control-sm rounded" /></td>
-                                        <td><input name="Graficos[@i].Campo2" value="@Model.Graficos[i].Campo2" class="form-control form-control-sm rounded" /></td>
-                                        <td><input name="Graficos[@i].Tipo" value="@Model.Graficos[i].Tipo" class="form-control form-control-sm rounded" /></td>
+                                        <td>
+                                            <select name="Graficos[@i].Campo1" class="form-control form-control-sm rounded">
+                                                @foreach (var opcao in opcoesEixos)
+                                                {
+                                                    <option value="@opcao.Value" selected="@(opcao.Value == Model.Graficos[i].Campo1)">@opcao.Text</option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select name="Graficos[@i].Campo2" class="form-control form-control-sm rounded">
+                                                @foreach (var opcao in opcoesEixos)
+                                                {
+                                                    <option value="@opcao.Value" selected="@(opcao.Value == Model.Graficos[i].Campo2)">@opcao.Text</option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select name="Graficos[@i].Tipo" class="form-control form-control-sm rounded">
+                                                @foreach (var opcao in opcoesTipoGrafico)
+                                                {
+                                                    <option value="@opcao.Value" selected="@(opcao.Value == Model.Graficos[i].Tipo)">@opcao.Text</option>
+                                                }
+                                            </select>
+                                        </td>
                                         <td><input type="color" name="Graficos[@i].Cor" value="@Model.Graficos[i].Cor" class="form-control form-control-sm rounded" /></td>
-                                        <td><input type="checkbox" name="Graficos[@i].AtivarLegenda" value="true" @(Model.Graficos[i].AtivarLegenda ? "checked" : "") /></td>
                                         <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">🗑️</button></td>
                                     </tr>
                                 }
@@ -81,8 +134,22 @@
                                 {
                                     <tr>
                                         <td><input name="Cartoes[@i].Nome" value="@Model.Cartoes[i].Nome" class="form-control form-control-sm rounded" /></td>
-                                        <td><input name="Cartoes[@i].Campo" value="@Model.Cartoes[i].Campo" class="form-control form-control-sm rounded" /></td>
-                                        <td><input name="Cartoes[@i].TipoAgregacao" value="@Model.Cartoes[i].TipoAgregacao" class="form-control form-control-sm rounded" /></td>
+                                        <td>
+                                            <select name="Cartoes[@i].Campo" class="form-control form-control-sm rounded">
+                                                @foreach (var opcao in opcoesEixos)
+                                                {
+                                                    <option value="@opcao.Value" selected="@(opcao.Value == Model.Cartoes[i].Campo)">@opcao.Text</option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select name="Cartoes[@i].TipoAgregacao" class="form-control form-control-sm rounded">
+                                                @foreach (var opcao in opcoesAgregacao)
+                                                {
+                                                    <option value="@opcao.Value" selected="@(opcao.Value == Model.Cartoes[i].TipoAgregacao)">@opcao.Text</option>
+                                                }
+                                            </select>
+                                        </td>
                                         <td><input type="color" name="Cartoes[@i].Cor" value="@Model.Cartoes[i].Cor" class="form-control form-control-sm rounded" /></td>
                                         <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">🗑️</button></td>
                                     </tr>
@@ -112,15 +179,33 @@
             const tabela = document.querySelector("#tabelaGraficos tbody");
             const index = tabela.rows.length;
             const novaLinha = `
-                                <tr>
-                                    <td><input name="Graficos[${index}].Titulo" class="form-control form-control-sm" /></td>
-                                    <td><input name="Graficos[${index}].Campo1" class="form-control form-control-sm" /></td>
-                                    <td><input name="Graficos[${index}].Campo2" class="form-control form-control-sm" /></td>
-                                    <td><input name="Graficos[${index}].Tipo" class="form-control form-control-sm" /></td>
-                                    <td><input type="color" name="Graficos[${index}].Cor" class="form-control form-control-sm" value="#3366cc" /></td>
-                                    <td class="text-center"><input type="checkbox" name="Graficos[${index}].AtivarLegenda" value="true" /></td>
-                                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">🗑️</button></td>
-                                </tr>`;
+                <tr>
+                    <td><input name="Graficos[${index}].Titulo" class="form-control form-control-sm rounded" /></td>
+                    <td>
+                        <select name="Graficos[${index}].Campo1" class="form-control form-control-sm rounded">
+                            <option value="Data">Data</option>
+                            <option value="Valor">Valor</option>
+                            <option value="Tipo">Tipo</option>
+                            <option value="Categoria">Categoria</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select name="Graficos[${index}].Campo2" class="form-control form-control-sm rounded">
+                            <option value="DataMovimentacao">Data</option>
+                            <option value="Valor" selected>Valor</option>
+                            <option value="Tipo">Tipo</option>
+                            <option value="Categoria">Categoria</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select name="Graficos[${index}].Tipo" class="form-control form-control-sm rounded">
+                            <option value="Barra" selected>Barra</option>
+                            <option value="Pizza">Pizza</option>
+                        </select>
+                    </td>
+                    <td><input type="color" name="Graficos[${index}].Cor" class="form-control form-control-sm rounded" value="#3366cc" /></td>
+                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">🗑️</button></td>
+                </tr>`;
             tabela.insertAdjacentHTML("beforeend", novaLinha);
         }
 
@@ -128,13 +213,28 @@
             const tabela = document.querySelector("#tabelaCartoes tbody");
             const index = tabela.rows.length;
             const novaLinha = `
-                                <tr>
-                                    <td><input name="Cartoes[${index}].Nome" class="form-control form-control-sm" /></td>
-                                    <td><input name="Cartoes[${index}].Campo" class="form-control form-control-sm" /></td>
-                                    <td><input name="Cartoes[${index}].TipoAgregacao" class="form-control form-control-sm" /></td>
-                                    <td><input type="color" name="Cartoes[${index}].Cor" class="form-control form-control-sm" value="#3366cc" /></td>
-                                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">🗑️</button></td>
-                                </tr>`;
+                <tr>
+                    <td><input name="Cartoes[${index}].Nome" class="form-control form-control-sm rounded" /></td>
+                    <td>
+                        <select name="Cartoes[${index}].Campo" class="form-control form-control-sm rounded">
+                            <option value="Data">Data</option>
+                            <option value="Valor" selected>Valor</option>
+                            <option value="Tipo">Tipo</option>
+                            <option value="Categoria">Categoria</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select name="Cartoes[${index}].TipoAgregacao" class="form-control form-control-sm rounded">
+                            <option value="Soma" selected>Soma</option>
+                            <option value="Média">Média</option>
+                            <option value="Máximo">Máximo</option>
+                            <option value="Mínimo">Mínimo</option>
+                            <option value="Contagem">Contagem</option>
+                        </select>
+                    </td>
+                    <td><input type="color" name="Cartoes[${index}].Cor" class="form-control form-control-sm rounded" value="#3366cc" /></td>
+                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">🗑️</button></td>
+                </tr>`;
             tabela.insertAdjacentHTML("beforeend", novaLinha);
         }
     </script>
