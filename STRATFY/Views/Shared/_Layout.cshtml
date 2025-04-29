@@ -21,45 +21,21 @@
         }
 
         #wrapper {
-            display: flex;
             transition: all 0.3s ease;
         }
+
+            #wrapper.d-flex {
+                display: flex;
+            }
 
         .sidebar {
             width: 250px;
-            transition: all 0.3s ease;
             background-color: #fff;
         }
 
-            .sidebar.toggled {
-                width: 0;
-                overflow: hidden;
-            }
-
         .content {
-            width: calc(100% - 250px);
+            flex-grow: 1; /* O conteúdo ocupa o espaço restante */
             transition: all 0.3s ease;
-        }
-
-        #wrapper.toggled .sidebar {
-            width: 0;
-            overflow: hidden;
-        }
-
-        #wrapper.toggled .content {
-            width: 100%;
-        }
-
-        #toggleSidebar {
-            position: absolute;
-            top: 10px;
-            left: 260px;
-            z-index: 1000;
-            transition: left 0.3s ease;
-        }
-
-        #wrapper.toggled #toggleSidebar {
-            left: 10px;
         }
 
         .img-logo {
@@ -69,36 +45,40 @@
     </style>
 </head>
 <body>
-    <div id="wrapper" class="d-flex">
-        <nav class="sidebar">
-            <div class="d-flex justify-content-center mb-4">
-                <a asp-area="" asp-controller="Home" asp-action="Index">
-                    <img class="img-logo" src="~/Images/Stratfy_Logo06.png" alt="Stratfy Logo" />
-                </a>
-            </div>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link btn btn-info mb-2 text-white" asp-area="" asp-controller="Usuarios" asp-action="Edit">Minha Conta</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link btn btn-info mb-2 text-white" asp-area="" asp-controller="Extratos" asp-action="Index">Extratos</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link btn btn-info mb-2 text-white" asp-area="" asp-controller="Dashboards" asp-action="Index">Dashboards</a>
-                </li>
-            </ul>
-            <div class="text-center mb-3">
-                <form asp-controller="Login" asp-action="Logout" method="post">
-                    <button type="submit" class="btn btn-outline-danger" style="width:100px">Sair</button>
-                </form>
-            </div>
-        </nav>
+    @{
+        bool isHomePage = ViewContext.RouteData.Values["action"]?.ToString() == "Index" &&
+        ViewContext.RouteData.Values["controller"]?.ToString() == "Home";
+    }
 
-        <button id="toggleSidebar" class="btn">
-            <i class="bi bi-chevron-left"></i>
-        </button>
+    <div id="wrapper" class="@(isHomePage ? "" : "d-flex")">
+        @if (!isHomePage)
+        {
+            <nav class="sidebar">
+                <div class="d-flex justify-content-center mb-4">
+                    <a asp-area="" asp-controller="Home" asp-action="Index">
+                        <img class="img-logo" src="~/Images/Stratfy_Logo06.png" alt="Stratfy Logo" />
+                    </a>
+                </div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-info mb-2 text-white" asp-area="" asp-controller="Usuarios" asp-action="Edit">Minha Conta</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-info mb-2 text-white" asp-area="" asp-controller="Extratos" asp-action="Index">Extratos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-info mb-2 text-white" asp-area="" asp-controller="Dashboards" asp-action="Index">Dashboards</a>
+                    </li>
+                </ul>
+                <div class="text-center mb-3">
+                    <form asp-controller="Login" asp-action="Logout" method="post">
+                        <button type="submit" class="btn btn-outline-danger" style="width:100px">Sair</button>
+                    </form>
+                </div>
+            </nav>
+        }
 
-        <div class="content p-3">
+        <div class="@(isHomePage ? "w-100" : "content p-3")">
             <main role="main">
                 @RenderBody()
             </main>
@@ -111,19 +91,6 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        const wrapper = document.getElementById('wrapper');
-        const sidebar = wrapper.querySelector('.sidebar');
-        const toggleBtn = document.getElementById('toggleSidebar');
-        const toggleIcon = toggleBtn.querySelector('i');
-
-        toggleBtn.addEventListener('click', () => {
-            wrapper.classList.toggle('toggled');
-            sidebar.classList.toggle('toggled');
-            toggleIcon.classList.toggle('bi-chevron-left');
-            toggleIcon.classList.toggle('bi-chevron-right');
-        });
-    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
     <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.2.2/datatables.min.js"></script>
