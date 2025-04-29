@@ -235,22 +235,18 @@ namespace STRATFY.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(DashboardVM model)
         {
-            // Preenche os campos que causam falha na validação ANTES de validar o ModelState
-            var dashboardbanco = _dashboardRepository.SelecionarChave(model.Id);
-
-            foreach (var grafico in model.Graficos)
-            {
-                grafico.Dashboard = dashboardbanco;
-                ModelState.Remove($"Graficos[{model.Graficos.IndexOf(grafico)}].Dashboard");
-            }
-
-            foreach (var cartao in model.Cartoes)
-            {
-                cartao.Dashboard = dashboardbanco;
-                ModelState.Remove($"Cartoes[{model.Cartoes.IndexOf(cartao)}].Dashboard");
-            }
 
             ModelState.Remove("ExtratosDisponiveis");
+
+            for (int i = 0; i < model.Graficos?.Count; i++)
+            {
+                ModelState.Remove($"Graficos[{i}].Dashboard");
+            }
+
+            for (int i = 0; i < model.Cartoes?.Count; i++)
+            {
+                ModelState.Remove($"Cartoes[{i}].Dashboard");
+            }
 
             if (!ModelState.IsValid)
             {

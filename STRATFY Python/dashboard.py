@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import requests
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 
 st.set_page_config(layout="wide")
 
@@ -12,7 +13,6 @@ dashboard_id = str(query.get("dashboardId", "")).strip()
 
 if dashboard_id:
     url = f"http://localhost:5211/api/dashboarddata/{dashboard_id}"
-    
     response = requests.get(url)
 
     if response.status_code == 200:
@@ -44,18 +44,31 @@ if dashboard_id:
             colunas_cards = st.columns(len(data["cartoes"]))
             for i, card in enumerate(data["cartoes"]):
                 campo = card["campo"].lower()
+                tipo_agregacao = card["tipoAgregacao"].lower()
+
                 if campo in df.columns:
-                    valor = df[campo].sum() if card["tipoAgregacao"].lower() == "soma" else df[campo].nunique()
+                    if tipo_agregacao == "soma":
+                        valor = df[campo].sum()
+                    elif tipo_agregacao == "media":
+                        valor = df[campo].mean()
+                    elif tipo_agregacao == "max":
+                        valor = df[campo].max()
+                    elif tipo_agregacao == "min":
+                        valor = df[campo].min()
+                    elif tipo_agregacao == "contagem":
+                        valor = df[campo].nunique()
+                    else:
+                        valor = "Agregação inválida"
                     colunas_cards[i].metric(label=card["nome"], value=valor)
                 else:
                     colunas_cards[i].warning(f"Campo inválido: {campo}")
 
         st.markdown("---")
 
-                # ====== Gráficos ======
+        # ====== Gráficos ======
         st.subheader("Gráficos")
         graficos = data["graficos"]
-        num_por_linha = 2  # Altere para 3 ou mais se quiser mais colunas por linha
+        num_por_linha = 2
 
         for i in range(0, len(graficos), num_por_linha):
             colunas = st.columns(num_por_linha)
@@ -64,20 +77,37 @@ if dashboard_id:
                 with colunas[j]:
                     campo1 = graf["campo1"].lower()
                     campo2 = graf["campo2"].lower()
+                    tipo = graf["tipo"].lower()
+                    cor = graf.get("cor", "blue").lower()
 
                     if campo1 in df.columns and campo2 in df.columns:
                         st.subheader(graf["titulo"])
-                        if graf["tipo"].lower() == "barra":
-                            st.bar_chart(df.groupby(campo1)[campo2].sum(), color = graf["cor"].lower())
-                        elif graf["tipo"].lower() == "pizza":
+
+                        if tipo == "barra":
+                            agrupado = df.groupby(campo1)[campo2].sum()
+                            st.bar_chart(agrupado, color=cor)
+
+                        elif tipo == "linha":
+                            agrupado = df.groupby(campo1)[campo2].sum()
+                            st.line_chart(agrupado, color=cor)
+
+                        elif tipo == "pizza":
                             dados = df.groupby(campo1)[campo2].sum().abs()
+
+                            # Gerar uma paleta de tons da cor base
+                            base_color = mcolors.to_rgb(cor)
+                            n = len(dados)
+                            palette = [mcolors.to_hex((min(1, base_color[0] + i/n), 
+                                                       min(1, base_color[1] + i/n), 
+                                                       min(1, base_color[2] + i/n))) for i in range(n)]
+
                             fig, ax = plt.subplots()
-                            ax.pie(dados, labels=dados.index, autopct='%1.1f%%', startangle=90)
+                            ax.pie(dados, labels=dados.index, autopct='%1.1f%%', startangle=90, colors=palette)
                             ax.axis('equal')
                             st.pyplot(fig)
+
                     else:
                         st.warning(f"Campos inválidos no gráfico: {campo1}, {campo2}")
-
 
     else:
         st.error("Dashboard não encontrada.")

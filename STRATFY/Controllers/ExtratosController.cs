@@ -27,11 +27,25 @@ namespace STRATFY.Controllers
             _categoriaRepository = categoriaRepository;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            var extratos = await _extratoRepository.SelecionarTodosDoUsuarioAsync();
-            return View(extratos);
+            var viewModel = _context.Extratos
+                .Select(e => new ExtratoIndexViewModel
+                {
+                    Id = e.Id,
+                    Nome = e.Nome,
+                    DataCriacao = e.DataCriacao,
+                    //IsFavorito = "",
+                    DataInicioMovimentacoes = e.Movimentacaos.Min(m => (DateOnly)m.DataMovimentacao),
+                    DataFimMovimentacoes = e.Movimentacaos.Max(m => (DateOnly)m.DataMovimentacao),
+                    TotalMovimentacoes = e.Movimentacaos.Count()
+                })
+                .OrderByDescending(e => e.Id)
+                .ToList();
+
+            return View(viewModel);
         }
+
 
         public async Task<IActionResult> Details(int? id)
         {

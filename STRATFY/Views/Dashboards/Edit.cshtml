@@ -16,16 +16,17 @@
     var opcoesTipoGrafico = new List<SelectListItem>
     {
         new SelectListItem { Value = "Barra", Text = "Barra" },
-        new SelectListItem { Value = "Pizza", Text = "Pizza" }
+        new SelectListItem { Value = "Pizza", Text = "Pizza" },
+        new SelectListItem { Value = "Linha", Text = "Linha" }
     };
     
     // Opções para tipos de agregação
     var opcoesAgregacao = new List<SelectListItem>
     {
         new SelectListItem { Value = "Soma", Text = "Soma" },
-        new SelectListItem { Value = "Média", Text = "Média" },
-        new SelectListItem { Value = "Máximo", Text = "Máximo" },
-        new SelectListItem { Value = "Mínimo", Text = "Mínimo" },
+        new SelectListItem { Value = "Media", Text = "Média" },
+        new SelectListItem { Value = "Max", Text = "Máximo" },
+        new SelectListItem { Value = "Min", Text = "Mínimo" },
         new SelectListItem { Value = "Contagem", Text = "Contagem" }
     };
 }
@@ -183,7 +184,7 @@
                     <td><input name="Graficos[${index}].Titulo" class="form-control form-control-sm rounded" /></td>
                     <td>
                         <select name="Graficos[${index}].Campo1" class="form-control form-control-sm rounded">
-                            <option value="Data">Data</option>
+                            <option value="DataMovimentacao">Data</option>
                             <option value="Valor">Valor</option>
                             <option value="Tipo">Tipo</option>
                             <option value="Categoria">Categoria</option>
@@ -201,6 +202,7 @@
                         <select name="Graficos[${index}].Tipo" class="form-control form-control-sm rounded">
                             <option value="Barra" selected>Barra</option>
                             <option value="Pizza">Pizza</option>
+                            <option value="Linha">Linha</option>
                         </select>
                     </td>
                     <td><input type="color" name="Graficos[${index}].Cor" class="form-control form-control-sm rounded" value="#3366cc" /></td>
@@ -217,7 +219,7 @@
                     <td><input name="Cartoes[${index}].Nome" class="form-control form-control-sm rounded" /></td>
                     <td>
                         <select name="Cartoes[${index}].Campo" class="form-control form-control-sm rounded">
-                            <option value="Data">Data</option>
+                            <option value="DataMovimentacao">Data</option>
                             <option value="Valor" selected>Valor</option>
                             <option value="Tipo">Tipo</option>
                             <option value="Categoria">Categoria</option>
@@ -226,9 +228,9 @@
                     <td>
                         <select name="Cartoes[${index}].TipoAgregacao" class="form-control form-control-sm rounded">
                             <option value="Soma" selected>Soma</option>
-                            <option value="Média">Média</option>
-                            <option value="Máximo">Máximo</option>
-                            <option value="Mínimo">Mínimo</option>
+                            <option value="Media">Média</option>
+                            <option value="Max">Máximo</option>
+                            <option value="Min">Mínimo</option>
                             <option value="Contagem">Contagem</option>
                         </select>
                     </td>
