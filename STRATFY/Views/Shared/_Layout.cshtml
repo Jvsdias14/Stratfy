@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,77 +13,55 @@
     <link rel="stylesheet" href="~/STRATFY.styles.css" asp-append-version="true" />
     <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.2.2/datatables.min.css" rel="stylesheet" />
 
-    <style>
-        body {
-            background-color: #00B4D8 !important;
-            margin: 0;
-            overflow-x: hidden;
-        }
-
-        #wrapper {
-            transition: all 0.3s ease;
-        }
-
-            #wrapper.d-flex {
-                display: flex;
-            }
-
-        .sidebar {
-            width: 250px;
-            background-color: #fff;
-        }
-
-        .content {
-            flex-grow: 1; /* O conteúdo ocupa o espaço restante */
-            transition: all 0.3s ease;
-        }
-
-        .img-logo {
-            width: 100%;
-            max-width: 200px;
-        }
-    </style>
 </head>
 <body>
-    @{
-        bool isHomePage = ViewContext.RouteData.Values["action"]?.ToString() == "Index" &&
-        ViewContext.RouteData.Values["controller"]?.ToString() == "Home";
-    }
+        <aside class="sidebar">
+            <header class="sidebar-header">
+                <a href="#" class="header-logo">
+                    <img src="~/Images/Stratfy_Logo06.png" alt="logo stratfy">
+                </a>
+            </header>
 
-    <div id="wrapper" class="@(isHomePage ? "" : "d-flex")">
-        @if (!isHomePage)
-        {
-            <nav class="sidebar">
-                <div class="d-flex justify-content-center mb-4">
-                    <a asp-area="" asp-controller="Home" asp-action="Index">
-                        <img class="img-logo" src="~/Images/Stratfy_Logo06.png" alt="Stratfy Logo" />
-                    </a>
-                </div>
-                <ul class="nav flex-column">
+            <nav class="sidebar-nav">
+                <ul class="nav-list primary-nav">
                     <li class="nav-item">
-                        <a class="nav-link btn btn-info mb-2 text-white" asp-area="" asp-controller="Usuarios" asp-action="Edit">Minha Conta</a>
+                        <a asp-controller="Usuarios" asp-action="Edit" class="nav-link">
+                            <span class="bi bi-person"></span>
+                            <span class="nav-label">Minha Conta</span>
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link btn btn-info mb-2 text-white" asp-area="" asp-controller="Extratos" asp-action="Index">Extratos</a>
+                        <a asp-controller="Extratos" asp-action="Index" class="nav-link">
+                            <span class="bi bi-wallet"></span>
+                            <span class="nav-label">Extratos</span>
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link btn btn-info mb-2 text-white" asp-area="" asp-controller="Dashboards" asp-action="Index">Dashboards</a>
+                        <a asp-controller="Dashboards" asp-action="Index" class="nav-link">
+                            <span class="bi bi-bar-chart"></span>
+                            <span class="nav-label">Dashboard</span>
+                        </a>
                     </li>
                 </ul>
-                <div class="text-center mb-3">
-                    <form asp-controller="Login" asp-action="Logout" method="post">
-                        <button type="submit" class="btn btn-outline-danger" style="width:100px">Sair</button>
-                    </form>
-                </div>
-            </nav>
-        }
 
-        <div class="@(isHomePage ? "w-100" : "content p-3")">
-            <main role="main">
-                @RenderBody()
-            </main>
-        </div>
+                <ul class="nav-list secondary-nav">
+                    <li class="nav-item">
+                        <form asp-controller="Login" asp-action="Logout" method="post" class="nav-link">
+                            <button type="submit" class="nav-link btn btn-link p-0 border-0">
+                                <span class="bi bi-box-arrow-left"></span>
+                                <span class="nav-label">Sair</span>
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+
+    <div class="main-content">
+        @RenderBody()
     </div>
+
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -91,6 +69,7 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
     @await RenderSectionAsync("Scripts", required: false)
     <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.2.2/datatables.min.js"></script>

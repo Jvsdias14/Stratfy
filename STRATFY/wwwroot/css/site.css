@@ -1,9 +1,201 @@
-:root {
-    --azul-escuro: #03045E;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", sans-serif;
+}
+
+
+body {
+    height: 100vh;
+    background: linear-gradient(#f1faff, #cbe4ff);
+}
+
+.sidebar {
+    width: 250px;
+    margin:16px;
+    border-radius:16px;
+    position: fixed;
+    background: #151a2d;
+    transition: 0.4s ease;
+}
+
+    .sidebar.collapsed {
+        width: 85px;
+    }
+
+.sidebar-header {
+    position: relative;
+    display: flex;
+    padding: 25px 20px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+    .sidebar-header .header-logo img {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+        border-radius: 50%;
+    }
+
+    .sidebar-header .toggler {
+        position: absolute;
+        right: 20px;
+        height: 35px;
+        width: 35px;
+        border: none;
+        color: #151a2d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border-radius: 8px;
+        background: #fff;
+        transition: 0.4s ease;
+    }
+
+.sidebar.collapsed .sidebar-header .toggler {
+    transform: translate(-4px, 65px);
+}
+
+.sidebar-header .toggler:hover {
+    background: #dde4fb;
+}
+
+.sidebar-header .toggler span {
+    font-size: 1.75rem;
+    transition: 0.4s ease;
+}
+
+.sidebar.collapsed .sidebar-header .toggler span {
+    transform: rotate(180deg);
+}
+
+.sidebar-nav .nav-list {
+    list-style: none;
+    display: flex;
+    gap: 4px;
+    padding: 0 15px;
+    flex-direction: column;
+    transform: translateY(15px);
+    transition: 0.4s ease;
+}
+
+.sidebar.collapsed .sidebar-nav .primary-nav {
+    transform: translateY(65px);
+}
+
+.sidebar-nav .nav-link {
+    color: #fff;
+    display: flex;
+    gap: 12px;
+    white-space: nowrap;
+    border-radius: 8px;
+    align-items: center;
+    padding: 12px 15px;
+    text-decoration: none;
+    transition: 0.4s ease;
+}
+
+    .sidebar-nav .nav-link:hover {
+        color: #151a2d;
+        background: #fff;
+    }
+
+    .sidebar-nav .nav-link .nav-label {
+        transition: opacity 0.4s ease;
+    }
+
+.sidebar.collapsed .sidebar-nav .nav-link .nav-label {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.sidebar-nav .nav-item {
+    position: relative;
+}
+
+.sidebar-nav .nav-tooltip {
+    position: absolute;
+    top: -10px;
+    opacity: 0;
+    display: none;
+    pointer-events: none;
+    left: calc(100% + 25px);
+    color: #151a2d;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: #fff;
+    white-space: nowrap;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    transition: 0s;
+}
+
+.sidebar.collapsed .sidebar-nav .nav-tooltip {
+    display: block;
+}
+
+.sidebar-nav .nav-item:hover .nav-tooltip {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(50%);
+    transition: 0.4s ease;
+}
+
+.sidebar-nav .secondary-nav {
+    position: absolute;
+    bottom: 30px;
+    width: 90%;
+}
+
+@media (max-width: 1024px) {
+    .sidebar {
+        margin: 13px;
+        width: calc(100% - 28px);
+    }
+
+    .sidebar-header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: #151a2d;
+        padding: 8px 10px;
+        border-radius: 16px;
+    }
+
+        .sidebar-header .header-logo img {
+            width: 40px;
+            height: 40px;
+        }
+
+    .sidebar-nav .nav-list {
+        padding: 0 10px;
+    }
+
+    .sidebar-nav .nav-link {
+        gap: 10px;
+        padding: 10px;
+        font-size: 0.94rem;
+    }
+
+        .sidebar-nav .nav-link .nav-icon {
+            font-size: 1.37rem;
+        }
+}
+
+.main-content {
+    margin-left: 270px;
+    padding: 20px;
+}
+
+/*:root {
+    --azul-escuro: ##151a2d;
     --azul-medio: #0077B6;
     --azul-claro: #00B4D8;
     --turquesa: #90E0EF;
-    --azul-gelo: #CAF0F8;
+    --azul-gelo: #cbe4ff;
     --branco: #ffffff;
     --cinza-texto: #444;
 }
@@ -31,10 +223,10 @@ html {
 body {
     margin-bottom: 60px;
     background: linear-gradient(135deg, var(--azul-escuro), var(--azul-medio));
-}
+}*/
 
 /* Botões */
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+/*.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
     box-shadow: 0 0 0 0.1rem var(--branco), 0 0 0 0.25rem var(--azul-medio);
 }
 
@@ -68,10 +260,10 @@ body {
 
     .btn-cta:hover {
         background-color: var(--azul-medio);
-    }
+    }*/
 
 /* Navegação */
-.nav-item {
+/*.nav-item {
     background-color: var(--turquesa);
     margin: 10px;
     border-radius: 5px;
@@ -88,23 +280,23 @@ body {
 
     .nav-link:hover {
         color: var(--branco);
-    }
+    }*/
 
 /* Logo */
-.img-logo {
+/*.img-logo {
     width: 150px;
     height: 150px;
-}
+}*/
 
 /* Tabela */
-.table-light {
+/*.table-light {
     --bs-table-bg: var(--azul-medio);
     text-align: center;
     color: var(--branco);
-}
+}*/
 
 /* Layout Flex */
-.d-flex {
+/*.d-flex {
     display: flex;
     justify-content: right;
     align-items: center;
@@ -116,10 +308,10 @@ body {
     padding: 10px;
     padding-right: 12px;
     padding-left: 12px;
-}
+}*/
 
 /* Cartões de movimentação */
-.mov-card {
+/*.mov-card {
     border-left: 4px solid var(--azul-escuro);
     border-radius: 1rem;
     transition: box-shadow 0.2s ease-in-out;
@@ -140,10 +332,10 @@ body {
 
 .mov-info {
     color: var(--cinza-texto);
-}
+}*/
 
 /* Título e Conteúdo */
-.title {
+/*.title {
     color: var(--branco);
 }
 
@@ -151,10 +343,10 @@ body {
     width: auto;
     min-width: 1ch;
     padding: 0.375rem 0.75rem;
-}
+}*/
 
 /* Sidebar */
-.sidebar {
+/*.sidebar {
     background: linear-gradient(180deg, var(--azul-claro), var(--azul-gelo));
     width: 250px;
     transition: all 0.3s ease-in-out;
@@ -179,17 +371,17 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-}
+}*/
 
 /* Input de cor */
-input.form-control-color {
+/*input.form-control-color {
     appearance: none;
     -webkit-appearance: none;
     border-radius: 4px;
-}
+}*/
 
 /* Seções da Landing Page */
-.landing-container {
+/*.landing-container {
     font-family: 'Segoe UI', sans-serif;
     background-color: var(--azul-gelo);
     border-radius: 20px;
@@ -301,10 +493,10 @@ input.form-control-color {
 
 #wrapper.toggled .content {
     width: 100%;
-}
+}*/
 
 /* Botão flutuante fixo para toggle */
-#toggleSidebar {
+/*#toggleSidebar {
     position: absolute;
     top: 20px;
     left: 260px;
@@ -361,4 +553,4 @@ input.form-control-color {
 
     .categoria-option.highlight {
         background-color: #e9ecef;
-    }
+    }*/
