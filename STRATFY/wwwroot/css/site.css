@@ -190,6 +190,90 @@ body {
     padding: 20px;
 }
 
+.formulario_logar {
+    background-color: white;
+    width: 50%;
+    border-radius: 20px;
+    padding-bottom: 10px;
+    box-shadow: 8px 8px 16px rgba(0,0,0,0.08);
+}
+
+.formulario_logar .form-control {
+    border:none;
+}
+
+.btn.rounded-pill {
+    background-color: #151a2d;
+    color: #f1faff;
+    box-shadow: 8px 8px 16px rgba(0,0,0,0.08);
+}
+
+.cadastro_usuario {
+    background-color: white;
+    width: 50%;
+    border-radius: 20px;
+    box-shadow: 8px 8px 16px rgba(0,0,0,0.08);
+    padding:16px;
+}
+
+.cadastro_usuario .form-control {
+    border:none;
+}
+
+.editar_usuario {
+    background-color: white;
+    width: 50%;
+    border-radius: 20px;
+    box-shadow: 8px 8px 16px rgba(0,0,0,0.08);
+    padding: 16px;
+}
+
+.editar_usuario .form-control{
+    border:none;
+}
+
+.cadastro_extrato {
+    background-color: white;
+    width: 50%;
+    border-radius: 20px;
+    box-shadow: 8px 8px 16px rgba(0,0,0,0.08);
+    padding:16px;
+}
+
+.editar_extrato {
+    background-color: #151a2d;
+    color:#f1faff;
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 8px 8px 16px rgba(0,0,0,0.08);
+    padding: 16px;
+}
+
+.cadastro_dashboard {
+    background-color: white;
+    width: 50%;
+    border-radius: 20px;
+    box-shadow: 8px 8px 16px rgba(0,0,0,0.08);
+    padding: 16px;
+}
+
+.cadastro_dashboard .form-control {
+    border:none;
+}
+
+.editar_dashboard {
+    background-color: #151a2d;
+    color: #f1faff;
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 8px 8px 16px rgba(0,0,0,0.08);
+    padding: 16px;
+}
+
+/*.cadastro_extrato .form-control {
+    border:none;
+}*/
+
 /*:root {
     --azul-escuro: ##151a2d;
     --azul-medio: #0077B6;

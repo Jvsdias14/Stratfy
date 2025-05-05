@@ -5,7 +5,7 @@
 }
 
 <div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-    <div class="p-5 shadow formulario">
+    <div class="cadastro_extrato">
         <h2 class="text-center mb-4">Cadastrar Extrato</h2>
 
         <form asp-action="Create" method="post" enctype="multipart/form-data">
@@ -13,7 +13,7 @@
 
             <div class="mb-3">
                 <label asp-for="Nome" class="form-label"></label>
-                <input asp-for="Nome" class="form-control rounded-3" />
+                <input asp-for="Nome" class="form-control rounded-3" placeholder="Nome do Extrato" style="border:none"/>
                 <span asp-validation-for="Nome" class="text-warning"></span>
             </div>
 

@@ -3,9 +3,9 @@
     ViewData["Title"] = "Login";
 }
 
-<div class="container mt-5">
+<div>
     <div class="row justify-content-center">
-        <div class="col-md-6" style="background: #FFFFFF; border-radius:20px">
+        <div class="formulario_logar">
             <h2 class="text-center">Entrar</h2>
             <hr />
 
@@ -28,13 +28,13 @@
 
                 <div class="form-group mb-3">
                     <label asp-for="Email" class="form-label"></label>
-                    <input asp-for="Email" class="form-control" />
+                    <input asp-for="Email" class="form-control" placeholder="Digite o seu e-mail" />
                     <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
 
                 <div class="form-group mb-3">
                     <label asp-for="Senha" class="form-label"></label>
-                    <input asp-for="Senha" class="form-control" type="password" />
+                    <input asp-for="Senha" class="form-control" type="password" placeholder="Digite sua senha" />
                     <span asp-validation-for="Senha" class="text-danger"></span>
                 </div>
 
@@ -43,8 +43,8 @@
                     <a asp-action="Cadastrar" class="btn btn-outline-secondary">Cadastrar-se</a>
                 </div> *@
                 <div class="d-flex justify-content-between mt-4">
-                    <input type="submit" value="Entrar" class="btn rounded-pill" style="background-color: #00b4d8; color: white;"></>
-                    <a asp-action="Cadastrar" class="btn rounded-pill" style="background-color: #00b4d8; color: white;">Cadastrar-se</a>
+                    <input type="submit" value="Entrar" class="btn rounded-pill"></>
+                    <a asp-action="Cadastrar" class="btn rounded-pill">Cadastrar-se</a>
                 </div>
             </form>
         </div>
