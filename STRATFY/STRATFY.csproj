@@ -8,6 +8,11 @@
 
   <ItemGroup>
     <Content Remove="wwwroot\css\StyleSheet.css" />
+    <Content Remove="wwwroot\Images\Nome_Stratfy.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\Images\Nome_Stratfy.png" />
   </ItemGroup>
 
   <ItemGroup>
