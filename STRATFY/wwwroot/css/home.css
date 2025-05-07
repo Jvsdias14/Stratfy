@@ -1,0 +1,35 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", sans-serif;
+}
+
+
+body {
+    height: 100vh;
+    width: 100vw;
+    background: linear-gradient(#f1faff, #cbe4ff);
+}
+
+#carouselExample .carousel-inner .carousel-item > div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: inherit; /* Garante que a altura do item acompanhe o slide */
+    padding: 20px;
+}
+
+#carouselExample .carousel-item {
+    min-height: 400px; /* Defina uma altura para os slides */
+    background-color:aquamarine;
+}
+
+.texto_coluna {
+    display: flex; /* Ativa o Flexbox para a coluna */
+    flex-direction: column; /* Organiza os itens verticalmente (título e parágrafo) */
+    justify-content: center; /* Alinha os itens verticalmente ao centro */
+    align-items: flex-start;
+}
