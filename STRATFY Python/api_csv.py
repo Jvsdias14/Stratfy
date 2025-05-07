@@ -3,9 +3,16 @@ import pandas as pd
 import pdfplumber
 import re
 from flask_cors import CORS
+import traceback
+from modelo_categorizacao import carregar_modelo, prever_categoria
 
 app = Flask(__name__)
 CORS(app)
+
+# Carregar o modelo de machine learning treinado
+modelo_categorizador = carregar_modelo()
+if not modelo_categorizador:
+    print("Aviso: Modelo de categorização não carregado. A categorização automática não estará disponível.")
 
 # Mapeamento de sinônimos de colunas
 sinonimos_colunas = {
@@ -15,7 +22,7 @@ sinonimos_colunas = {
     "data": ["data", "data operação", "data lançamento", "time", "data movimentação"]
 }
 
-# Padrões para inferir tipos a partir da descrição
+# Padrões para inferir tipos a partir da descrição (manter para tipos básicos)
 padroes_tipo = {
     "PIX": r'\bpix\b',
     "DÉBITO": r'\bdébito\b|\bdebito\b',
@@ -42,7 +49,7 @@ def inferir_tipo(descricao):
     for tipo, padrao in padroes_tipo.items():
         if re.search(padrao, desc):
             return tipo
-    return "OUTRO"
+    return "Outros"
 
 def ler_csv(file):
     try:
@@ -176,23 +183,29 @@ def processar_csv():
             except ValueError:
                 continue
             data_movimentacao = row["data"].isoformat()
+            tipo_detectado = None
 
             if "tipo" in row and pd.notna(row["tipo"]):
-                tipo = str(row["tipo"]).strip().upper()
+                tipo_detectado = str(row["tipo"]).strip().upper()
             else:
-                tipo = inferir_tipo(descricao)
+                tipo_detectado = inferir_tipo(descricao)
+
+            # Tentar categorizar usando o modelo de ML se carregado
+            categoria_predita = None
+            if modelo_categorizador:
+                categoria_predita = prever_categoria(modelo_categorizador, descricao)
 
             movimentacoes.append({
                 "Descricao": descricao,
                 "Valor": valor,
-                "Tipo": tipo,
-                "DataMovimentacao": data_movimentacao
+                "Tipo": tipo_detectado,
+                "DataMovimentacao": data_movimentacao,
+                "Categoria": {"Nome": categoria_predita}
             })
 
         return jsonify(movimentacoes)
 
     except Exception as e:
-        import traceback
         traceback.print_exc()
         return jsonify({'erro': str(e)}), 500
 

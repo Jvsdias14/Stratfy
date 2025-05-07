@@ -103,10 +103,28 @@ namespace STRATFY.Controllers
                             foreach (var mov in movimentacoes)
                             {
                                 mov.ExtratoId = extrato.Id;
-                                mov.Categoria = _context.Categoria.FirstOrDefault(c => c.Nome == "Outros");
-                                
+
+                                var categoriaEncontrada = _context.Categoria.FirstOrDefault(c => c.Nome == mov.Categoria.Nome);
+
+                                if (categoriaEncontrada != null)
+                                {
+                                    mov.Categoria = categoriaEncontrada;
+                                }
+                                else
+                                {
+                                    // Lógica para criar uma nova categoria
+                                    var novaCategoria = new Categoria
+                                    {
+                                        Id = 0, // Indica que é uma nova categoria a ser criada
+                                        Nome = mov.Categoria.Nome
+                                    };
+                                    mov.Categoria = novaCategoria;
+                                    // _context.Categoria.Add(novaCategoria); // Se o contexto rastrear novas entidades
+                                }
+
                                 _movRepository.Incluir(mov);
                             }
+                        
                             _movRepository.Salvar();
                         }
                     }
