@@ -16,71 +16,80 @@
 </head>
 <body>
         <main role="main" class="pb-3">
-            <div id="carouselExample" class="carousel slide">
-                <div class="carousel-inner">
-                    <div class="carousel-item active">
-                        <div>
-                            <h3 class="text-center">Privacidade Garantida</h3>
+        <div id="carouselExample" class="carousel slide">
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <div>
+                        <h3 class="text-center">Privacidade Garantida</h3>
                         <p class="text-center">Você decide se quer armazenar seus dados. Segurança e liberdade lado a lado.</p>
-                        </div>
-                    </div>
-                    <div class="carousel-item active">
-                        <div>
-                        <h3 class="text-center">Gestão Descomplicada</h3>
-                        <p class="text-center">Adicione e gerencie extratos com poucos cliques. Tudo centralizado, tudo prático.</p>
-                        </div>
-                    </div>
-                    <div class="carousel-item active">
-                        <div>
-                        <h3 class="text-center">Dashboards Personalizados</h3>
-                        <p class="text-center">Visualize seus gastos e ganhos com gráficos do seu jeito. Inteligência visual ao seu alcance.</p>
+                        <div class="d-flex justify-content-center mt-3">
+                            <a class="btn btn-outline-light me-2" asp-area="" asp-controller="Usuarios" asp-action="Create">Criar Conta</a>
+                            <a class="btn btn-outline-light" asp-area="" asp-controller="Login" asp-action="Index">Entrar</a>
                         </div>
                     </div>
                 </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Anterior</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Próximo</span>
-                </button>
+                <div class="carousel-item">
+                    <div>
+                        <h3 class="text-center">Gestão Descomplicada</h3>
+                        <p class="text-center">Adicione e gerencie extratos com poucos cliques. Tudo centralizado, tudo prático.</p>
+                        <div class="d-flex justify-content-center mt-3">
+                            <a class="btn btn-outline-light me-2" asp-area="" asp-controller="Usuarios" asp-action="Create">Criar Conta</a>
+                            <a class="btn btn-outline-light" asp-area="" asp-controller="Login" asp-action="Index">Entrar</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <div>
+                        <h3 class="text-center">Dashboards Personalizados</h3>
+                        <p class="text-center">Visualize seus gastos e ganhos com gráficos do seu jeito. Inteligência visual ao seu alcance.</p>
+                        <div class="d-flex justify-content-center mt-3">
+                            <a class="btn btn-outline-light me-2" asp-area="" asp-controller="Usuarios" asp-action="Create">Criar Conta</a>
+                            <a class="btn btn-outline-light" asp-area="" asp-controller="Login" asp-action="Index">Entrar</a>
+                        </div>
+                    </div>
+                </div>
             </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Anterior</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Próximo</span>
+            </button>
+        </div>
 
-        <div class="row featurette">
+
+            <hr class="divisoria" />
+
+        <div class="row featurette" style="padding:10px;">
             <div class="col-md-7 texto_coluna">
                 <h2 class="featurette-heading fw-normal lh-1">
-                    First featurette heading.
-                    <span class="text-body-secondary">It'll blow your mind.</span>
+                    Gestão Centralizada.
+                    <span class="text-body-secondary">Visualize todos os seus extratos em um só lugar.</span>
                 </h2>
                 <p class="lead">
-                    Some great placeholder content for the first featurette here. Imagine some exciting prose here.
+                    Controle total de seus extratos. Tenha acesso as suas movimentações de maneira rápida e fácil.
                 </p>
             </div>
             <div class="col-md-5">
-                <svg class="bd-placeholder-img bd-placeholder-img-lg featurette-image img-fluid mx-auto" width="500" height="500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 250x250" preserveAspectRatio="xMidYMid slice" focusable="false">
-                    <title>Placeholder</title>
-                    <rect width="100%" height="100%" fill="#eee" />
-                    <text x="50%" y="50%" fill="#aaa" dy=".3em">250x250</text>
-                </svg>
+                <img src="~/Images/Print_Extratos.png" alt="Extratos" class="imagem_exemplo">
             </div>
         </div>
+        
+            <hr class="divisoria" />
 
-        <div class="row featurette">
+        <div class="row featurette" style="padding:10px;">
             <div class="col-md-5">
-                <svg class="bd-placeholder-img bd-placeholder-img-lg featurette-image img-fluid mx-auto" width="500" height="500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 250x250" preserveAspectRatio="xMidYMid slice" focusable="false">
-                    <title>Placeholder</title>
-                    <rect width="100%" height="100%" fill="#eee" />
-                    <text x="50%" y="50%" fill="#aaa" dy=".3em">250x250</text>
-                </svg>
+                <img src="~/Images/Print_Extratos.png" alt="Extratos" class="bd-placeholder-img bd-placeholder-img-lg featurette-image img-fluid mx-auto" width="500" height="500">
             </div>
             <div class="col-md-7 texto_coluna">
                 <h2 class="featurette-heading fw-normal lh-1">
-                    First featurette heading.
-                    <span class="text-body-secondary">It'll blow your mind.</span>
+                    Dashboards Interativas.
+                    <span class="text-body-secondary">Defina parâmetros e gráficos de acordo com suas preferências.</span>
                 </h2>
                 <p class="lead">
-                    Some great placeholder content for the first featurette here. Imagine some exciting prose here.
+                    Personalização total de gráficos, parâmetros e cartões para facilitar a gestão.
                 </p>
             </div>
         </div>

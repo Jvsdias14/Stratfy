@@ -8,8 +8,9 @@
 
 
 body {
-    height: 100vh;
-    width: 100vw;
+    height: 100%;
+    max-width: 100%;
+    overflow-x:hidden;
     background: linear-gradient(#f1faff, #cbe4ff);
 }
 
@@ -24,7 +25,8 @@ body {
 
 #carouselExample .carousel-item {
     min-height: 400px; /* Defina uma altura para os slides */
-    background-color:aquamarine;
+    background-color: #151a2d;
+    color:#fff;
 }
 
 .texto_coluna {
@@ -32,4 +34,17 @@ body {
     flex-direction: column; /* Organiza os itens verticalmente (título e parágrafo) */
     justify-content: center; /* Alinha os itens verticalmente ao centro */
     align-items: flex-start;
+}
+
+.imagem_exemplo {
+    width:100%;
+    border: solid 1px #151a2d;
+    border-radius:16px 0 0 16px;
+}
+
+.divisoria {
+/*    margin: 5rem 0;*/
+    width:95%;
+    margin-right:auto;
+    margin-left:auto;
 }
