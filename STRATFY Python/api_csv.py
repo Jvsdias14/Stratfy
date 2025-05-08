@@ -24,13 +24,24 @@ sinonimos_colunas = {
 
 # Padrões para inferir tipos a partir da descrição (manter para tipos básicos)
 padroes_tipo = {
-    "PIX": r'\bpix\b',
-    "DÉBITO": r'\bdébito\b|\bdebito\b',
-    "CRÉDITO": r'\bcrédito\b|\bcredito\b',
-    "BOLETO": r'\bboleto\b',
-    "TRANSFERÊNCIA": r'\btransferência\b|\btransferencia\b',
-    "TED": r'\bted\b',
-    "DOC": r'\bdoc\b'
+    "Pix": r'\bpix\b',
+    "Débito": r'\bdébito\b|\bdebito\b',
+    "Crédito": r'\bcrédito\b|\bcredito\b',
+}
+
+# Dicionário de mapeamento de nomes de categorias para IDs
+categoria_nome_para_id = {
+    "Moradia": 1,
+    "Saúde": 2,
+    "Educação": 3,
+    "Transporte": 4,
+    "Alimentação": 5,
+    "Lazer": 6,
+    "Contas": 7,
+    "Vestuário": 8,
+    "Taxas": 9,
+    "Salário": 10,
+    "Outros": 11
 }
 
 def detectar_colunas(df):
@@ -186,21 +197,23 @@ def processar_csv():
             tipo_detectado = None
 
             if "tipo" in row and pd.notna(row["tipo"]):
-                tipo_detectado = str(row["tipo"]).strip().upper()
+                tipo_detectado = str(row["tipo"]).strip()
             else:
                 tipo_detectado = inferir_tipo(descricao)
 
             # Tentar categorizar usando o modelo de ML se carregado
-            categoria_predita = None
+            categoria_nome_predita = None
+            categoria_id_predita = None
             if modelo_categorizador:
-                categoria_predita = prever_categoria(modelo_categorizador, descricao)
+                categoria_nome_predita = prever_categoria(modelo_categorizador, descricao)
+                categoria_id_predita = categoria_nome_para_id.get(categoria_nome_predita)
 
             movimentacoes.append({
                 "Descricao": descricao,
                 "Valor": valor,
                 "Tipo": tipo_detectado,
                 "DataMovimentacao": data_movimentacao,
-                "Categoria": {"Nome": categoria_predita}
+                "Categoria": {"Nome": categoria_nome_predita, "Id": categoria_id_predita}
             })
 
         return jsonify(movimentacoes)

@@ -5,6 +5,7 @@
     var categorias = ViewData["CategoriaId"] as SelectList;
     var tipos = new List<SelectListItem>
     {
+        new SelectListItem { Value = "Selecione o tipo", Text = "Selecione o tipo" },
         new SelectListItem { Value = "Débito", Text = "Débito" },
         new SelectListItem { Value = "Crédito", Text = "Crédito" },
         new SelectListItem { Value = "Dinheiro", Text = "Dinheiro" },
@@ -58,7 +59,10 @@
                     <thead class="table-light">
                         <tr>
                             <th>Descrição</th>
-                            <th>Valor</th>
+                            <th>Valor
+                                <i class="bi bi-info-circle" data-bs-toggle="tooltip" data-bs-placement="top"
+                                   title="Use valores positivos para entradas e negativos (-) para saídas de dinheiro"></i>
+                            </th>
                             <th>Tipo</th>
                             <th>Categoria</th>
                             <th>Data</th>
@@ -73,7 +77,9 @@
                                 <input type="hidden" name="Movimentacoes[@i].ExtratoId" value="@Model.ExtratoId" />
 
                                 <td><input class="form-control rounded-3 searchable-field" name="Movimentacoes[@i].Descricao" value="@Model.Movimentacoes[i].Descricao" /></td>
-                                <td><input class="form-control rounded-3" name="Movimentacoes[@i].Valor" value="@Model.Movimentacoes[i].Valor" /></td>
+                                <td>
+                                    <input class="form-control rounded-3" name="Movimentacoes[@i].Valor" value="@Model.Movimentacoes[i].Valor" />
+                                    </td>
                                 <td>
                                     <select name="Movimentacoes[@i].Tipo" class="form-control rounded-3 tipo-field">
                                         @foreach (var item in tipos)
@@ -85,19 +91,15 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <div class="categoria-select-container position-relative">
-                                        <input type="text" class="form-control rounded-3 categoria-input"
-                                               name="Movimentacoes[@i].Categoria.Nome"
-                                               value="@Model.Movimentacoes[i].Categoria?.Nome"
-                                               autocomplete="off"
-                                               placeholder="Selecione ou digite uma categoria" />
-                                        <div class="categoria-dropdown dropdown-menu w-100 shadow-sm">
-                                            @foreach (var categoria in categorias)
-                                            {
-                                                <div class="dropdown-item categoria-option">@categoria.Text</div>
-                                            }
-                                        </div>
-                                    </div>
+                                    <select name="Movimentacoes[@i].Categoria.Id" class="form-control rounded-3 categoria-select">
+                                        <option value="">Selecione a Categoria</option>
+                                        @foreach (var categoria in categorias)
+                                        {
+                                            <option value="@categoria.Value" selected="@(categoria.Value == Model.Movimentacoes[i].Categoria.Id.ToString())">
+                                                @categoria.Text
+                                            </option>
+                                        }
+                                    </select>
                                 </td>
 
                                 <td>
@@ -167,6 +169,12 @@
 
 @section Scripts {
     <script>
+        let categoriasDoBanco = [
+        @foreach (var item in categorias)
+        {
+            <text>{ value: "@item.Value", text: "@item.Text" }, </text>
+        }
+                ];
         // Variáveis de controle da paginação
         let paginaAtual = 1;
         let registrosPorPagina = 10;
@@ -262,6 +270,21 @@
             const tbody = $('#movimentacoes-table tbody');
             const extratoId = $('#ExtratoId').val();
 
+            // Construir as opções de categoria
+            let optionsHtml = '<option value="">Selecione a Categoria</option>';
+            categoriasDoBanco.forEach(categoria => {
+                optionsHtml += `<option value="${categoria.value}">${categoria.text}</option>`;
+            });
+
+            // Construir as opções de tipo
+            let tiposHtml = `
+                <option value="Selecione o tipo">Selecione o tipo</option>
+                <option value="Débito">Débito</option>
+                <option value="Crédito">Crédito</option>
+                <option value="Dinheiro">Dinheiro</option>
+                <option value="Pix">Pix</option>
+            `;
+
             const novaLinha = `
                 <tr class="movimentacao-row">
                     <input type="hidden" name="Movimentacoes[${indice}].Id" value="0" />
@@ -270,39 +293,24 @@
                     <td><input class="form-control rounded-3" name="Movimentacoes[${indice}].Valor" /></td>
                     <td>
                         <select class="form-control rounded-3 tipo-field" name="Movimentacoes[${indice}].Tipo">
-                            <option value="Débito">Débito</option>
-                            <option value="Crédito">Crédito</option>
-                            <option value="Dinheiro">Dinheiro</option>
-                            <option value="Pix">Pix</option>
+                            ${tiposHtml}
                         </select>
                     </td>
                     <td>
-                        <input list="categorias-lista" class="form-control rounded-3 searchable-field" name="Movimentacoes[${indice}].Categoria.Nome" />
-                        <!-- Datalist deve estar definido fora da função para evitar duplicação -->
-                        <datalist id="categorias-lista">
-        @foreach (var categoria in categorias)
-        {
-                                    <option value="@categoria.Text"></option>
-        }
-                        </datalist>
+                        <select class="form-control rounded-3 categoria-select" name="Movimentacoes[${indice}].Categoria.Id">
+                            ${optionsHtml}
+                        </select>
                     </td>
                     <td><input class="form-control rounded-3" type="date" name="Movimentacoes[${indice}].DataMovimentacao" /></td>
                     <td><button type="button" class="btn btn-outline-danger btn-sm" onclick="removerLinha(this)">Remover</button></td>
                 </tr>
             `;
 
-            // Adicionar a nova linha ao final da tabela
             tbody.append(novaLinha);
             indice++;
-
-            // Ir para a última página e atualizar a paginação
-            const totalRegistros = $('.movimentacao-row').length;
-            totalPaginas = Math.ceil(totalRegistros / registrosPorPagina);
+            totalPaginas = Math.ceil($('.movimentacao-row').length / registrosPorPagina);
             paginaAtual = totalPaginas;
-
             atualizarPaginacao();
-
-            // Focar no primeiro campo da nova linha
             tbody.find('tr:last-child td:first-child input').focus();
         }
 
@@ -512,6 +520,92 @@
                     }
                 });
             });
+
+            function validarFormulario() {
+                let isValido = true;
+                let mensagensErro = [];
+
+                // Remover alertas anteriores
+                $(".alert-validation").remove();
+
+                // Validar cada linha de movimentação
+                $('.movimentacao-row:not(.d-none)').each(function (index) {
+                    const row = $(this);
+                    const descricao = row.find('input[name$="Descricao"]').val();
+                    const valor = row.find('input[name$="Valor"]').val();
+                    const tipo = row.find('select[name$="Tipo"]').val();
+                    const categoria = row.find('select[name$="Categoria.Id"]').val();
+                    const data = row.find('input[name$="DataMovimentacao"]').val();
+
+                    // Validar campos obrigatórios
+                    if (!descricao || descricao.trim() === '') {
+                        isValido = false;
+                        row.find('input[name$="Descricao"]').addClass('is-invalid');
+                        mensagensErro.push(`Linha ${index + 1}: Descrição é obrigatória`);
+                    } else {
+                        row.find('input[name$="Descricao"]').removeClass('is-invalid');
+                    }
+
+                    if (!valor || valor.trim() === '') {
+                        isValido = false;
+                        row.find('input[name$="Valor"]').addClass('is-invalid');
+                        mensagensErro.push(`Linha ${index + 1}: Valor é obrigatório`);
+                    } else {
+                        row.find('input[name$="Valor"]').removeClass('is-invalid');
+                    }
+
+                    if (!tipo || tipo === 'Selecione o tipo') {
+                        isValido = false;
+                        row.find('select[name$="Tipo"]').addClass('is-invalid');
+                        mensagensErro.push(`Linha ${index + 1}: Tipo é obrigatório`);
+                    } else {
+                        row.find('select[name$="Tipo"]').removeClass('is-invalid');
+                    }
+
+                    if (!categoria || categoria === '') {
+                        isValido = false;
+                        row.find('select[name$="Categoria.Id"]').addClass('is-invalid');
+                        mensagensErro.push(`Linha ${index + 1}: Categoria é obrigatória`);
+                    } else {
+                        row.find('select[name$="Categoria.Id"]').removeClass('is-invalid');
+                    }
+
+                    if (!data || data.trim() === '') {
+                        isValido = false;
+                        row.find('input[name$="DataMovimentacao"]').addClass('is-invalid');
+                        mensagensErro.push(`Linha ${index + 1}: Data é obrigatória`);
+                    } else {
+                        row.find('input[name$="DataMovimentacao"]').removeClass('is-invalid');
+                    }
+                });
+
+                // Se houver erros, mostrar alerta
+                if (!isValido) {
+                    const alertHtml = `
+                <div class="alert alert-danger alert-validation alert-dismissible fade show mt-3" role="alert">
+                    <strong>Atenção!</strong> Por favor, corrija os seguintes erros:
+                    <ul>
+                        ${mensagensErro.map(msg => `<li>${msg}</li>`).join('')}
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                `;
+
+                    // Usar um seletor específico para o container do formulário principal
+                    $('.editar_extrato form').prepend(alertHtml);
+                    $('html, body').animate({ scrollTop: 0 }, 'slow');
+                }
+
+                return isValido;
+            }
+        $('form').on('submit', function (event) {
+            if (!validarFormulario()) {
+                event.preventDefault();
+                return false;
+            }
+            return true;
+        });
+
         });
     </script>
 }

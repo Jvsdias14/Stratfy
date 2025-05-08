@@ -104,7 +104,7 @@ namespace STRATFY.Controllers
                             {
                                 mov.ExtratoId = extrato.Id;
 
-                                var categoriaEncontrada = _context.Categoria.FirstOrDefault(c => c.Nome == mov.Categoria.Nome);
+                                var categoriaEncontrada = _categoriaRepository.SelecionarChave(mov.Categoria.Id);
 
                                 if (categoriaEncontrada != null)
                                 {
@@ -173,10 +173,15 @@ namespace STRATFY.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(ExtratoEdicaoViewModel model)
         {
-            ModelState.Remove("CategoriaId"); // se necessário
+            // Remova a validação para Categoria.Nome em cada Movimentacao
+            foreach (var mov in model.Movimentacoes)
+            {
+                ModelState.Remove($"Movimentacoes[{model.Movimentacoes.IndexOf(mov)}].Categoria.Nome");
+            }
+
             if (!ModelState.IsValid)
             {
-                ViewData["CategoriaId"] = new SelectList(_categoriaRepository.SelecionarTodos(), "Id", "Nome");
+                ViewData["CategoriaId"] = new SelectList(_categoriaRepository.SelecionarTodos(), "Id", "Nome", model.Movimentacoes.Select(m => m.CategoriaId).ToList());
                 return View(model);
             }
 
@@ -191,48 +196,40 @@ namespace STRATFY.Controllers
             var movimentacoesRemovidas = extrato.Movimentacaos.Where(m => !idsRecebidos.Contains(m.Id)).ToList();
             _movRepository.RemoverVarias(movimentacoesRemovidas);
 
-            // Buscar todas as categorias existentes uma vez só
-            var todasCategorias = _context.Categoria.ToList();
-            var categoriasMap = new Dictionary<string, Categoria>(StringComparer.OrdinalIgnoreCase);
-
-            // Popula o dicionário de forma segura, evitando duplicações
-            foreach (var cat in todasCategorias)
-            {
-                // Se já existe uma categoria com este nome (case insensitive), não adiciona novamente
-                if (!categoriasMap.ContainsKey(cat.Nome.Trim()))
-                {
-                    categoriasMap[cat.Nome.Trim()] = cat;
-                }
-            }
+            // Não precisamos mais buscar e mapear todas as categorias para criar novas
 
             foreach (var mov in model.Movimentacoes)
             {
-                if (mov.CategoriaId == 0 && mov.Categoria != null && !string.IsNullOrWhiteSpace(mov.Categoria.Nome))
+                // Agora, a CategoriaId deve vir preenchida do SelectList na View
+                // Se CategoriaId for zero ou nulo, algo deu errado na seleção na View
+
+                if (mov.Categoria.Id <= 0)
                 {
-                    string categoriaNome = mov.Categoria.Nome.Trim();
-
-                    if (categoriasMap.TryGetValue(categoriaNome, out var categoriaExistente))
-                    {
-                        mov.CategoriaId = categoriaExistente.Id;
-                    }
-                    else
-                    {
-                        var novaCategoria = new Categoria { Nome = categoriaNome };
-                        _context.Categoria.Add(novaCategoria);
-                        await _context.SaveChangesAsync(); // necessário para obter o ID
-
-                        categoriasMap[categoriaNome] = novaCategoria;
-                        mov.CategoriaId = novaCategoria.Id;
-                    }
+                    // Log de erro ou tratamento adequado aqui, pois deveria ter um CategoriaId selecionado
+                    ModelState.AddModelError($"Movimentacoes[{model.Movimentacoes.IndexOf(mov)}].CategoriaId", "A categoria é obrigatória.");
+                    ViewData["CategoriaId"] = new SelectList(_categoriaRepository.SelecionarTodos(), "Id", "Nome", model.Movimentacoes.Select(m => m.CategoriaId).ToList());
+                    return View(model);
                 }
 
-                // 🔒 Previne que o EF tente adicionar categoria manualmente
-                mov.Categoria = null;
+                // 🔒 Previne que o EF tente adicionar/atualizar a entidade Categoria diretamente
 
                 if (mov.Id == 0)
                 {
-                    mov.ExtratoId = model.ExtratoId;
-                    _movRepository.Incluir(mov);
+                    // Cria uma nova movimentação sem incluir o objeto Categoria completo
+                    var novaMovimentacao = new Movimentacao
+                    {
+                        Descricao = mov.Descricao,
+                        Valor = mov.Valor,
+                        Tipo = mov.Tipo,
+                        CategoriaId = mov.Categoria.Id, // Apenas a referência ao ID
+                        DataMovimentacao = mov.DataMovimentacao,
+                        ExtratoId = model.ExtratoId
+                    };
+
+                    // Importante: defina Categoria como null para evitar que o EF tente inseri-la
+                    novaMovimentacao.Categoria = null;
+
+                    _movRepository.Incluir(novaMovimentacao);
                 }
                 else
                 {
@@ -242,7 +239,7 @@ namespace STRATFY.Controllers
                         movBanco.Descricao = mov.Descricao;
                         movBanco.Valor = mov.Valor;
                         movBanco.Tipo = mov.Tipo;
-                        movBanco.CategoriaId = mov.CategoriaId;
+                        movBanco.CategoriaId = mov.Categoria.Id;
                         movBanco.DataMovimentacao = mov.DataMovimentacao;
                     }
                 }
