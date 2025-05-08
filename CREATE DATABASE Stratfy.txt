@@ -74,3 +74,16 @@ CREATE TABLE Cartoes (
         FOREIGN KEY (Dashboard_id) REFERENCES Dashboard(id)
         ON DELETE CASCADE ON UPDATE NO ACTION
 );
+
+INSERT INTO Categoria (Nome)
+    VALUES ('Moradia'),
+           ('Saúde'),
+           ('Educação'),
+           ('Transporte'),
+           ('Alimentação'),
+           ('Lazer'),
+           ('Contas'),
+           ('Vestuário'),
+           ('Taxas'),
+           ('Salário'),
+           ('Outros');
