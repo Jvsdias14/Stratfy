@@ -2,6 +2,8 @@
 using STRATFY.Models;
 using System.ComponentModel.DataAnnotations;
 
+namespace STRATFY.Models;
+
 public class DashboardVM
 {
     public int Id { get; set; }
