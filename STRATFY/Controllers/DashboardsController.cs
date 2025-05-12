@@ -29,6 +29,7 @@ namespace STRATFY.Controllers
         public async Task<IActionResult> Index()
         {
             var dashboards = await _dashboardRepository.SelecionarTodosDoUsuarioAsync();
+            var extratos = await _extratoRepository.SelecionarTodosDoUsuarioAsync();
             return View(dashboards);
         }
 
