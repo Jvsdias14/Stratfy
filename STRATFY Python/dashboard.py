@@ -138,12 +138,13 @@ if dashboard_id:
                             # Gerar uma paleta de tons da cor base
                             base_color = mcolors.to_rgb(cor)
                             n = len(dados)
-                            palette = [mcolors.to_hex((min(1, base_color[0] + i/n),
-                                                        min(1, base_color[1] + i/n),
-                                                        min(1, base_color[2] + i/n))) for i in range(n)]
+                            palette = [mcolors.to_hex((
+                                min(1, base_color[0] + i/n * 0.7),
+                                min(1, base_color[1] + i/n * 0.7),
+                                min(1, base_color[2] + i/n * 0.7))) for i in range(n)]
 
                             fig, ax = plt.subplots()
-                            ax.pie(dados, labels=dados.index, autopct='%1.1f%%', startangle=90, colors=palette)
+                            ax.pie(dados, labels=dados.index, autopct='%1.1f%%', startangle=90, colors=palette, pctdistance=0.85, labeldistance=1.15)
                             ax.axis('equal')
                             st.pyplot(fig)
                         elif tipo in ["barra", "linha"] and campo1 != "datamovimentacao":

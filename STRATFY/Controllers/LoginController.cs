@@ -24,6 +24,11 @@ namespace STRATFY.Controllers
         [AllowAnonymous]
         public IActionResult Index(string returnUrl = null)
         {
+            if (User.Identity.IsAuthenticated)
+            {
+                // Redireciona para a Action de extratos
+                return RedirectToAction("Index", "Extratos");
+            }
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
 
             {

@@ -124,8 +124,8 @@ namespace STRATFY.Controllers
 
             var cartoesPadrao = new List<Cartao>
     {
-        new Cartao { Nome = "Total Geral", Campo = "Valor", TipoAgregacao = "soma", Cor = "black" },
-        new Cartao { Nome = "Contagem de Categorias", Campo = "Categoria", TipoAgregacao = "contagem", Cor = "blue" }
+        new Cartao { Nome = "Total Geral", Campo = "Valor", TipoAgregacao = "soma", Cor = "#3366cc" },
+        new Cartao { Nome = "Contagem de Categorias", Campo = "Categoria", TipoAgregacao = "contagem", Cor = "#3366cc" }
     };
 
             var dashboard = new Dashboard

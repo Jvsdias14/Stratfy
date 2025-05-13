@@ -20,15 +20,15 @@
 <div class="row">
     @foreach (var item in Model)
     {
-        <div class="col-sm-12 col-md-6 col-lg-4 mb-4">
-            <div class="feature-card hover-shadow" style="border-color:#151a2d">
+        <div class="col-sm-12 col-md-6 col-lg-4 mb-4 dashboard-card" data-dashboard-id="@item.Id" style="cursor: pointer;">
+            <div class="feature-card hover-shadow" style="border-color:#151a2d;">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title mb-3">@item.Descricao</h5>
                     <p class="card-text mb-1"><strong>Extrato:</strong> @item.Extrato.Nome</p>
-                    <p class="card-text mb-1"><i class="bi bi-list-ol me-1"></i> <strong>Gráficos:</strong> @item.Graficos.Count</p>
-                    <p class="card-text mb-1"><i class="bi bi-list-ol me-1"></i> <strong>Cartões:</strong> @item.Cartoes.Count</p>
-                    
-                    <div class="mt-auto d-flex justify-content-center">
+                    <p class="card-text mb-1"><i class="bi bi-graph-up me-1"></i> <strong>Gráficos:</strong> @item.Graficos.Count</p>
+                    <p class="card-text mb-1"><i class="bi bi-layout-three-columns me-1"></i> <strong>Cartões:</strong> @item.Cartoes.Count</p>
+
+                    <div class="mt-auto d-flex justify-content-center card-actions">
                         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm me-2">Editar</a>
                         <button class="btn btn-outline-danger btn-sm" onclick="confirmarExclusao(@item.Id, event)">Excluir</button>
                         <form id="form-delete-@item.Id" asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:none;"></form>
@@ -59,6 +59,21 @@
             }
         });
     }
+    document.addEventListener('DOMContentLoaded', function () {
+        const dashboardCards = document.querySelectorAll('.dashboard-card');
+
+        dashboardCards.forEach(card => {
+            card.addEventListener('click', function (event) {
+                const dashboardId = this.dataset.dashboardId;
+                const targetElement = event.target;
+
+                // Verifica se o clique não ocorreu dentro dos botões de ação
+                if (!targetElement.closest('.card-actions a') && !targetElement.closest('.card-actions button')) {
+                    window.location.href = '/Dashboards/Details/' + dashboardId; // Ajuste a URL conforme sua rota de detalhes
+                }
+            });
+        });
+    });
 </script>
 
 <style>
@@ -105,4 +120,14 @@
         background-color: #dc3545;
         color: #fff;
     }
+
+    .dashboard-card {
+        cursor: pointer; /* Indica que o cartão é clicável */
+    }
+
+        /* Impede que o estilo de link padrão afete os botões */
+        .dashboard-card .card-actions a {
+            text-decoration: none;
+           
+        }
 </style>
