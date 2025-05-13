@@ -6,19 +6,24 @@
     font-family: "Poppins", sans-serif;
 }
 
-
 body {
     height: 100vh;
     background: linear-gradient(#f1faff, #cbe4ff);
 }
 
+/* Oculta a navbar em telas maiores */
+.mobile-navbar {
+    display: none;
+}
+
 .sidebar {
     width: 250px;
-    margin:16px;
-    border-radius:16px;
+    margin: 16px;
+    border-radius: 16px;
     position: fixed;
     background: #151a2d;
     transition: 0.4s ease;
+    z-index: 1000; /* Garante que a sidebar fique acima do conteúdo */
 }
 
     .sidebar.collapsed {
@@ -38,7 +43,7 @@ body {
         height: 100px;
         object-fit: contain;
         border-radius: 50%;
-        margin-left:35px;
+        margin-left: 35px;
     }
 
     .sidebar-header .toggler {
@@ -151,57 +156,41 @@ body {
     width: 90%;
 }
 
-@media (max-width: 1024px) {
-    .sidebar {
-        margin: 13px;
-        width: calc(100% - 28px);
-    }
-
-    .sidebar-header {
-        position: sticky;
-        top: 0;
-        z-index: 20;
-        background: #151a2d;
-        padding: 8px 10px;
-        border-radius: 16px;
-    }
-
-        .sidebar-header .header-logo img {
-            width: 40px;
-            height: 40px;
-        }
-
-    .sidebar-nav .nav-list {
-        padding: 0 10px;
-    }
-
-    .sidebar-nav .nav-link {
-        gap: 10px;
-        padding: 10px;
-        font-size: 0.94rem;
-    }
-
-        .sidebar-nav .nav-link .nav-icon {
-            font-size: 1.37rem;
-        }
-}
 
 .main-content {
     margin-left: 270px;
     padding: 20px;
+    transition: margin-left 0.4s ease; /* Adiciona transição para o main-content */
 }
 
+/* Media query para dispositivos móveis */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none; /* Oculta a sidebar */
+    }
+
+    .mobile-navbar {
+        display: block; /* Exibe a navbar */
+    }
+
+    .main-content {
+        margin-left: 0; /* Remove a margem esquerda para ocupar a largura total */
+        padding-top: 70px; /* Adiciona padding para evitar que o conteúdo fique atrás da navbar fixa */
+    }
+}
+
+/* Estilos existentes... */
 .formulario_logar {
     background-color: white;
-    width: 50%;
+    width: 500px;
     border-radius: 20px;
     padding-bottom: 10px;
     box-shadow: 8px 8px 16px rgba(0,0,0,0.08);
 }
 
-.formulario_logar .form-control {
-    border:none;
-}
+    .formulario_logar .form-control {
+        border: none;
+    }
 
 .btn.rounded-pill {
     background-color: #151a2d;
@@ -211,43 +200,47 @@ body {
 
 .cadastro_usuario {
     background-color: white;
-    width: 50%;
-    border-radius: 20px;
-    box-shadow: 8px 8px 16px rgba(0,0,0,0.08);
-    padding:16px;
-}
-
-.cadastro_usuario .form-control {
-    border:none;
-}
-
-.editar_usuario {
-    background-color: white;
-    width: 50%;
+    width: 500px;
     border-radius: 20px;
     box-shadow: 8px 8px 16px rgba(0,0,0,0.08);
     padding: 16px;
 }
 
-.editar_usuario .form-control{
-    border:none;
+    .cadastro_usuario .form-control {
+        border: none;
+    }
+
+.editar_usuario {
+    background-color: white;
+    width: 500px;
+    border-radius: 20px;
+    box-shadow: 8px 8px 16px rgba(0,0,0,0.08);
+    padding: 16px;
 }
+
+    .editar_usuario .form-control {
+        border: none;
+    }
 
 .cadastro_extrato {
     background-color: white;
-    width: 50%;
+    width: 500px;
     border-radius: 20px;
     box-shadow: 8px 8px 16px rgba(0,0,0,0.08);
-    padding:16px;
+    padding: 16px;
 }
 
 .editar_extrato {
     background-color: #151a2d;
-    color:#f1faff;
+    color: #f1faff;
     width: 100%;
     border-radius: 20px;
     box-shadow: 8px 8px 16px rgba(0,0,0,0.08);
     padding: 16px;
+}
+
+#movimentacoes-table {
+    min-width: fit-content;
 }
 
 .cadastro_dashboard {
@@ -258,9 +251,9 @@ body {
     padding: 16px;
 }
 
-.cadastro_dashboard .form-control {
-    border:none;
-}
+    .cadastro_dashboard .form-control {
+        border: none;
+    }
 
 .editar_dashboard {
     background-color: #151a2d;

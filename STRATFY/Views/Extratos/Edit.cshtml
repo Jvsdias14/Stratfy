@@ -1,5 +1,9 @@
 ﻿@model STRATFY.Models.ExtratoEdicaoViewModel
 
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+
 @{
     ViewData["Title"] = "Editar Extrato";
     var categorias = ViewData["CategoriaId"] as SelectList;
@@ -13,7 +17,7 @@
     };
 }
 
-<div class="d-flex justify-content-center align-items-center" style="min-height: 90vh;">
+<div class="d-flex justify-content-center align-items-center" style="min-height: 90vh; min-width:100%;">
     <div class="editar_extrato">
         <h2 class="text-center mb-4">Editar Extrato</h2>
 
@@ -47,7 +51,7 @@
                 </div>
             </div>
 
-            <div class="table-responsive rounded" style="background-color: white; color: black; padding: 0.5rem; border-radius: 16px; overflow-x: auto;">
+            <div class="table-responsive rounded" style="background-color: white; color: black; padding: 0.5rem; border-radius: 16px; overflow-x: auto; min-width:fit-content;">
                 <table class="table table-bordered align-middle mb-0" id="movimentacoes-table" style="width: 100%;">
                     <datalist id="categorias-lista">
                         @foreach (var categoria in categorias)

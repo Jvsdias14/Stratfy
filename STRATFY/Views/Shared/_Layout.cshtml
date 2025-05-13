@@ -15,47 +15,84 @@
 
 </head>
 <body>
-        <aside class="sidebar">
-            <header class="sidebar-header">
-            <a asp-controller="Home" asp-action="Index" class="header-logo">
-                    <img src="~/Images/Nome_Stratfy.png" alt="logo stratfy">
-                </a>
-            </header>
-
-            <nav class="sidebar-nav">
-                <ul class="nav-list primary-nav">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top mobile-navbar">
+        <div class="container-fluid">
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                <img src="~/Images/Nome_Stratfy_Branco.png" alt="Logo Stratfy" height="30">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a asp-controller="Usuarios" asp-action="Edit" class="nav-link">
-                            <span class="bi bi-person"></span>
-                            <span class="nav-label">Minha Conta</span>
+                        <a class="nav-link" asp-controller="Usuarios" asp-action="Edit">
+                            <span class="bi bi-person"></span> Minha Conta
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a asp-controller="Extratos" asp-action="Index" class="nav-link">
-                            <span class="bi bi-wallet"></span>
-                            <span class="nav-label">Extratos</span>
+                        <a class="nav-link" asp-controller="Extratos" asp-action="Index">
+                            <span class="bi bi-wallet"></span> Extratos
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a asp-controller="Dashboards" asp-action="Index" class="nav-link">
-                            <span class="bi bi-bar-chart"></span>
-                            <span class="nav-label">Dashboard</span>
+                        <a class="nav-link" asp-controller="Dashboards" asp-action="Index">
+                            <span class="bi bi-bar-chart"></span> Dashboard
                         </a>
                     </li>
-                </ul>
-
-                <ul class="nav-list secondary-nav">
                     <li class="nav-item">
-                        <form asp-controller="Login" asp-action="Logout" method="post" class="nav-link">
+                        <form asp-controller="Login" asp-action="Logout" method="post">
                             <button type="submit" class="nav-link btn btn-link p-0 border-0">
-                                <span class="bi bi-box-arrow-left"></span>
-                                <span class="nav-label">Sair</span>
+                                <span class="bi bi-box-arrow-left"></span> Sair
                             </button>
                         </form>
                     </li>
                 </ul>
-            </nav>
-        </aside>
+            </div>
+        </div>
+    </nav>
+
+    <aside class="sidebar">
+        <header class="sidebar-header">
+            <a asp-controller="Home" asp-action="Index" class="header-logo">
+                <img src="~/Images/Nome_Stratfy.png" alt="logo stratfy">
+            </a>
+        </header>
+
+        <nav class="sidebar-nav">
+            <ul class="nav-list primary-nav">
+                <li class="nav-item">
+                    <a asp-controller="Usuarios" asp-action="Edit" class="nav-link">
+                        <span class="bi bi-person"></span>
+                        <span class="nav-label">Minha Conta</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a asp-controller="Extratos" asp-action="Index" class="nav-link">
+                        <span class="bi bi-wallet"></span>
+                        <span class="nav-label">Extratos</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a asp-controller="Dashboards" asp-action="Index" class="nav-link">
+                        <span class="bi bi-bar-chart"></span>
+                        <span class="nav-label">Dashboard</span>
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="nav-list secondary-nav">
+                <li class="nav-item">
+                    <form asp-controller="Login" asp-action="Logout" method="post" class="nav-link">
+                        <button type="submit" class="nav-link btn btn-link p-0 border-0">
+                            <span class="bi bi-box-arrow-left"></span>
+                            <span class="nav-label">Sair</span>
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+    </aside>
 
 
     <div class="main-content">
