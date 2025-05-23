@@ -16,7 +16,8 @@ namespace STRATFY.Repositories
         {
             var usuarioId = usuarioContexto.ObterUsuarioId();
             return await contexto.Set<Dashboard>()
-                .Where(e => e.Extrato.UsuarioId == usuarioId)
+                .Where(e => e.Extrato != null && e.Extrato.UsuarioId == usuarioId) // Verifica se Extrato não é nulo
+                .Include(e => e.Extrato)
                 .Include(e => e.Cartoes)
                 .Include(e => e.Graficos)
                 .OrderByDescending(e => e.Id)

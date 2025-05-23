@@ -124,7 +124,7 @@ if dashboard_id:
         st.markdown("---")
 
         # ====== Cartões (métricas) estilizados com CSS ======
-        st.subheader("Métricas")
+        st.subheader("Cartões")
 
         if data["cartoes"]:
             colunas_cards = st.columns(len(data["cartoes"]))
@@ -136,8 +136,9 @@ if dashboard_id:
                 if campo in df.columns:
                     if tipo_agregacao == "soma":
                         valor = df_filtrado[campo].sum()
+                        valor = valor.round(2)
                     elif tipo_agregacao == "media":
-                        valor = df_filtrado[campo].mean()
+                        valor = df_filtrado[campo].mean().round(2)
                     elif tipo_agregacao == "max":
                         valor = df_filtrado[campo].max()
                     elif tipo_agregacao == "min":

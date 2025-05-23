@@ -6,6 +6,8 @@ using STRATFY.Models;
 using STRATFY.Interfaces;
 using STRATFY.Repositories;
 using Microsoft.AspNetCore.Authorization;
+using STRATFY.Helpers;
+using System.Security.Claims;
 
 namespace STRATFY.Controllers
 {
@@ -29,21 +31,44 @@ namespace STRATFY.Controllers
 
         public IActionResult Index()
         {
+            // 1. Obter o ID do usuário logado
+            // Certifique-se de que o usuário está autenticado. Se não estiver, redirecione para o login.
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                // O usuário não está logado, redirecione ou retorne uma mensagem de erro
+                return RedirectToAction("Login", "Account"); // Exemplo de redirecionamento para login
+            }
+
+            // Converte o userId para o tipo correto (ex: int, Guid, string)
+            // Se seu userId no banco for int:
+            int userIdInt;
+            if (!int.TryParse(userId, out userIdInt))
+            {
+                // Lidar com erro se o ID do usuário não for um número válido
+                return BadRequest("ID de usuário inválido.");
+            }
+
+
+            // 2. Construir a consulta que filtra pelo usuário logado E calcula as agregações
             var viewModel = _context.Extratos
+                .Where(e => e.UsuarioId == userIdInt) // FILTRA PELO USUÁRIO LOGADO AQUI!
                 .Select(e => new ExtratoIndexViewModel
                 {
                     Id = e.Id,
                     Nome = e.Nome,
-                    DataCriacao = e.DataCriacao,
-                    //IsFavorito = "",
-                    DataInicioMovimentacoes = e.Movimentacaos.Min(m => (DateOnly)m.DataMovimentacao),
-                    DataFimMovimentacoes = e.Movimentacaos.Max(m => (DateOnly)m.DataMovimentacao),
+                    DataCriacao = e.DataCriacao, // Sua propriedade DataCriacao no Extrato
+ 
+                    DataInicioMovimentacoes = e.Movimentacaos.Any() ? e.Movimentacaos.Min(m => (DateOnly?)m.DataMovimentacao) : null,
+                    DataFimMovimentacoes = e.Movimentacaos.Any() ? e.Movimentacaos.Max(m => (DateOnly?)m.DataMovimentacao) : null,
                     TotalMovimentacoes = e.Movimentacaos.Count()
                 })
                 .OrderByDescending(e => e.Id)
                 .ToList();
 
             return View(viewModel);
+
         }
 
 

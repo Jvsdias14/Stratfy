@@ -29,7 +29,6 @@ namespace STRATFY.Controllers
         public async Task<IActionResult> Index()
         {
             var dashboards = await _dashboardRepository.SelecionarTodosDoUsuarioAsync();
-            var extratos = await _extratoRepository.SelecionarTodosDoUsuarioAsync();
             return View(dashboards);
         }
 
@@ -124,8 +123,9 @@ namespace STRATFY.Controllers
 
             var cartoesPadrao = new List<Cartao>
     {
-        new Cartao { Nome = "Total Geral", Campo = "Valor", TipoAgregacao = "soma", Cor = "#3366cc" },
-        new Cartao { Nome = "Contagem de Categorias", Campo = "Categoria", TipoAgregacao = "contagem", Cor = "#3366cc" }
+        new Cartao { Nome = "Total de Gastos", Campo = "Valor", TipoAgregacao = "soma", Cor = "#3366cc" },
+        new Cartao { Nome = "Média de Gastos", Campo = "Valor", TipoAgregacao = "media", Cor = "#3366cc" },
+        new Cartao { Nome = "Movimentações", Campo = "Valor", TipoAgregacao = "contagem", Cor = "#3366cc" }
     };
 
             var dashboard = new Dashboard

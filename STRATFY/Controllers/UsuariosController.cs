@@ -109,7 +109,7 @@ namespace STRATFY.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Login");
             }
             return View(usuario);
         }
