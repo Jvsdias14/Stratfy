@@ -1,10 +1,11 @@
 ﻿@model IEnumerable<STRATFY.Models.ExtratoIndexViewModel>
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Extratos"; // Título da página
 }
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.min.css">
 </head>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -23,11 +24,7 @@
             <div class="feature-card hover-shadow" style="border-color:#151a2d">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title mb-3">@item.Nome</h5>
-                    <div style="position: absolute; top: 10px; right: 10px;">
-                        <button class="btn btn-sm p-0" onclick="favoritarExtrato(@item.Id, this, event)" aria-label="@(item.IsFavorito ? "Desfavoritar Extrato" : "Favoritar Extrato")">
-                            <i class="bi @(item.IsFavorito ? "bi-star-fill text-warning" : "bi-star")" style="font-size: 1.2em;"></i>
-                        </button>
-                    </div>
+                    @* Lógica de favoritar removida daqui *@
                     <p class="card-text mb-1"><strong>Data de Criação:</strong> @item.DataCriacao.ToString("dd/MM/yyyy")</p>
                     @if (item.DataInicioMovimentacoes.HasValue && item.DataFimMovimentacoes.HasValue)
                     {
@@ -43,7 +40,11 @@
                     }
                     <div class="mt-auto d-flex justify-content-center">
                         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm me-2">Editar</a>
-                        <button class="btn btn-outline-danger btn-sm" onclick="confirmarExclusao(@item.Id, event)">Excluir</button>
+                        <button class="btn btn-outline-danger btn-sm me-2" onclick="confirmarExclusao(@item.Id, event)">Excluir</button>
+                        @* NOVO BOTÃO DE DOWNLOAD CSV *@
+                        <a asp-action="DownloadCsv" asp-route-id="@item.Id" class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-download me-1"></i> CSV
+                        </a>
                         <form id="form-delete-@item.Id" asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:none;"></form>
                     </div>
                 </div>
@@ -52,7 +53,7 @@
     }
 </div>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.min.css">
+@* Mover link do Bootstrap Icons para o head ou para um layout compartilhado se ainda não estiver lá *@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     function confirmarExclusao(id, event) {
@@ -74,24 +75,7 @@
         });
     }
 
-    function favoritarExtrato(id, button, event) {
-        event.preventDefault();
-        event.stopPropagation();
-        // Aqui você faria a chamada AJAX para o seu backend
-        // para salvar/remover o extrato como favorito.
-        console.log(`Extrato ${id} marcado/desmarcado como favorito.`);
-
-        const icon = button.querySelector('i');
-        if (icon.classList.contains('bi-star')) {
-            icon.classList.remove('bi-star');
-            icon.classList.add('bi-star-fill', 'text-warning');
-            button.setAttribute('aria-label', 'Desfavoritar Extrato');
-        } else {
-            icon.classList.remove('bi-star-fill', 'text-warning');
-            icon.classList.add('bi-star');
-            button.setAttribute('aria-label', 'Favoritar Extrato');
-        }
-    }
+    // A função favoritarExtrato foi removida pois a funcionalidade não será mais implementada.
 </script>
 
 <style>
@@ -106,10 +90,10 @@
         position: relative; /* Adicionado para o posicionamento absoluto dos filhos */
     }
 
-        .feature-card:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-        }
+    .feature-card:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
 
     .card-body {
         display: flex;
@@ -136,6 +120,17 @@
 
     .btn-outline-danger:hover {
         background-color: #dc3545;
+        color: #fff;
+    }
+
+    /* Estilo adicional para o botão de CSV */
+    .btn-outline-success {
+        border-color: #28a745;
+        color: #28a745;
+    }
+
+    .btn-outline-success:hover {
+        background-color: #28a745;
         color: #fff;
     }
 </style>

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using STRATFY.Interfaces;
+using STRATFY.Interfaces.IRepositories;
 using STRATFY.Models;
 
 namespace STRATFY.Controllers

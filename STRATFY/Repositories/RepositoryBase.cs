@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using STRATFY.Helpers;
-using STRATFY.Interfaces;
+using STRATFY.Interfaces.IRepositories;
 using STRATFY.Models;
 
 namespace STRATFY.Repositories

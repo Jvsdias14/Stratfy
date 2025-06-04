@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using STRATFY.Models;
-using STRATFY.Interfaces;
 using STRATFY.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using STRATFY.Helpers;
 using System.Security.Claims;
+using STRATFY.Interfaces.IRepositories;
+using STRATFY.Interfaces.IServices;
 
 namespace STRATFY.Controllers
 {
@@ -18,47 +19,46 @@ namespace STRATFY.Controllers
         private readonly RepositoryUsuario _usuarioRepository;
         private readonly IRepositoryBase<Categoria> _categoriaRepository;
         private readonly RepositoryMovimentacao _movRepository;
+        private readonly ICsvExportService _csvExportService;
         private readonly AppDbContext _context;
 
-        public ExtratosController(AppDbContext context, RepositoryExtrato extratoRepository, RepositoryUsuario usuarioRepo, RepositoryMovimentacao movRepository, IRepositoryBase<Categoria> categoriaRepository)
+        public ExtratosController(AppDbContext context, RepositoryExtrato extratoRepository, RepositoryUsuario usuarioRepo, 
+            RepositoryMovimentacao movRepository, IRepositoryBase<Categoria> categoriaRepository, ICsvExportService csvExportService)
         {
             _context = context;
             _extratoRepository = extratoRepository;
             _usuarioRepository = usuarioRepo;
             _movRepository = movRepository;
             _categoriaRepository = categoriaRepository;
+            _csvExportService = csvExportService;
         }
 
         public IActionResult Index()
         {
-            // 1. Obter o ID do usuário logado
-            // Certifique-se de que o usuário está autenticado. Se não estiver, redirecione para o login.
+
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userId))
             {
-                // O usuário não está logado, redirecione ou retorne uma mensagem de erro
-                return RedirectToAction("Login", "Account"); // Exemplo de redirecionamento para login
+
+                return RedirectToAction("Login", "Account"); 
             }
 
-            // Converte o userId para o tipo correto (ex: int, Guid, string)
-            // Se seu userId no banco for int:
             int userIdInt;
             if (!int.TryParse(userId, out userIdInt))
             {
-                // Lidar com erro se o ID do usuário não for um número válido
                 return BadRequest("ID de usuário inválido.");
             }
 
 
-            // 2. Construir a consulta que filtra pelo usuário logado E calcula as agregações
+
             var viewModel = _context.Extratos
-                .Where(e => e.UsuarioId == userIdInt) // FILTRA PELO USUÁRIO LOGADO AQUI!
+                .Where(e => e.UsuarioId == userIdInt) 
                 .Select(e => new ExtratoIndexViewModel
                 {
                     Id = e.Id,
                     Nome = e.Nome,
-                    DataCriacao = e.DataCriacao, // Sua propriedade DataCriacao no Extrato
+                    DataCriacao = e.DataCriacao, 
  
                     DataInicioMovimentacoes = e.Movimentacaos.Any() ? e.Movimentacaos.Min(m => (DateOnly?)m.DataMovimentacao) : null,
                     DataFimMovimentacoes = e.Movimentacaos.Any() ? e.Movimentacaos.Max(m => (DateOnly?)m.DataMovimentacao) : null,
@@ -216,42 +216,32 @@ namespace STRATFY.Controllers
 
             extrato.Nome = model.NomeExtrato;
 
-            // Processe as movimentações
             var idsRecebidos = model.Movimentacoes.Select(m => m.Id).ToList();
             var movimentacoesRemovidas = extrato.Movimentacaos.Where(m => !idsRecebidos.Contains(m.Id)).ToList();
             _movRepository.RemoverVarias(movimentacoesRemovidas);
 
-            // Não precisamos mais buscar e mapear todas as categorias para criar novas
-
             foreach (var mov in model.Movimentacoes)
             {
-                // Agora, a CategoriaId deve vir preenchida do SelectList na View
-                // Se CategoriaId for zero ou nulo, algo deu errado na seleção na View
 
                 if (mov.Categoria.Id <= 0)
                 {
-                    // Log de erro ou tratamento adequado aqui, pois deveria ter um CategoriaId selecionado
                     ModelState.AddModelError($"Movimentacoes[{model.Movimentacoes.IndexOf(mov)}].CategoriaId", "A categoria é obrigatória.");
                     ViewData["CategoriaId"] = new SelectList(_categoriaRepository.SelecionarTodos(), "Id", "Nome", model.Movimentacoes.Select(m => m.CategoriaId).ToList());
                     return View(model);
                 }
 
-                // 🔒 Previne que o EF tente adicionar/atualizar a entidade Categoria diretamente
-
                 if (mov.Id == 0)
                 {
-                    // Cria uma nova movimentação sem incluir o objeto Categoria completo
                     var novaMovimentacao = new Movimentacao
                     {
                         Descricao = mov.Descricao,
                         Valor = mov.Valor,
                         Tipo = mov.Tipo,
-                        CategoriaId = mov.Categoria.Id, // Apenas a referência ao ID
+                        CategoriaId = mov.Categoria.Id, 
                         DataMovimentacao = mov.DataMovimentacao,
                         ExtratoId = model.ExtratoId
                     };
 
-                    // Importante: defina Categoria como null para evitar que o EF tente inseri-la
                     novaMovimentacao.Categoria = null;
 
                     _movRepository.Incluir(novaMovimentacao);
@@ -304,6 +294,29 @@ namespace STRATFY.Controllers
                 TempData["DeleteError"] = "Não foi possível excluir o extrato porque ele possui movimentações vinculadas.";
                 return RedirectToAction(nameof(Delete), new { id });
             }
+        }
+        [HttpGet]
+        public async Task<IActionResult> DownloadCsv(int id) // 'id' é o ID do Extrato
+        {
+            var extrato = _extratoRepository.CarregarExtratoCompleto(id);
+            //var extrato = await _context.Extratos
+            //    .Include(e => e.Movimentacaos) // <--- CRUCIAL: Carrega as movimentações do extrato
+            //    .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (extrato == null)
+            {
+                return NotFound(); 
+            }
+
+            if (extrato.Movimentacaos == null || !extrato.Movimentacaos.Any())
+            {
+                var emptyCsvStream = await _csvExportService.ExportMovimentacoesToCsvAsync(new List<Movimentacao>());
+                return File(emptyCsvStream, "text/csv", $"Extrato_{extrato.Nome}_Movimentacoes.csv");
+            }
+
+            var csvStream = await _csvExportService.ExportMovimentacoesToCsvAsync(extrato.Movimentacaos);
+
+            return File(csvStream, "text/csv; charset=utf-8", $"Extrato_{extrato.Nome}_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
         }
     }
 }

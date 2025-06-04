@@ -1,4 +1,4 @@
-﻿namespace STRATFY.Interfaces
+﻿namespace STRATFY.Interfaces.IRepositories
 {
     public interface IRepositoryBase<T> where T : class
     {

@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using STRATFY.Helpers;
-using STRATFY.Interfaces;
+using STRATFY.Interfaces.IRepositories;
+using STRATFY.Interfaces.IServices;
 using STRATFY.Models;
 using STRATFY.Repositories;
+using STRATFY.Services;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,6 +33,7 @@ builder.Services.AddScoped<RepositoryUsuario>();
 builder.Services.AddScoped<RepositoryExtrato>();
 builder.Services.AddScoped<RepositoryMovimentacao>();
 builder.Services.AddScoped<RepositoryDashboard>();
+builder.Services.AddScoped<ICsvExportService, CsvExportService>();
 
 builder.WebHost.UseUrls("http://localhost:5211");
 
