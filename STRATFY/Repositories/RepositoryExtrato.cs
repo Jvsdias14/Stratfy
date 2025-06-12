@@ -1,17 +1,23 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using STRATFY.Helpers;
+using STRATFY.Interfaces.IContexts; // Para IUsuarioContexto, se for injetado
+using STRATFY.Interfaces.IRepositories;
 using STRATFY.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace STRATFY.Repositories
 {
-    public class RepositoryExtrato : RepositoryBase<Extrato>, IDisposable
+    // Removi IDisposable daqui porque RepositoryBase já implementa
+    public class RepositoryExtrato : RepositoryBase<Extrato>, IRepositoryExtrato
     {
-        private readonly UsuarioContexto usuarioContexto;
-        public RepositoryExtrato(AppDbContext context, UsuarioContexto usuariocontexto, bool pSaveChanges = true) : base(context, pSaveChanges)
+
+        public RepositoryExtrato(AppDbContext context, bool pSaveChanges = true) : base(context, pSaveChanges)
         {
-            usuarioContexto = usuariocontexto;
         }
 
+        // Seu método existente (síncrono)
         public Extrato CarregarExtratoCompleto(int extratoId)
         {
             var extrato = contexto.Extratos
@@ -23,16 +29,26 @@ namespace STRATFY.Repositories
             return extrato;
         }
 
-        public async Task<List<Extrato>> SelecionarTodosDoUsuarioAsync()
+        // Nova versão assíncrona para CarregarExtratoCompleto
+        public async Task<Extrato> CarregarExtratoCompletoAsync(int extratoId)
         {
-            var usuarioId = usuarioContexto.ObterUsuarioId();
+            var extrato = await contexto.Extratos
+                .Include(e => e.Usuario)
+                .Include(e => e.Movimentacaos)
+                .ThenInclude(m => m.Categoria)
+                .FirstOrDefaultAsync(e => e.Id == extratoId);
+
+            return extrato;
+        }
+
+        public async Task<List<Extrato>> SelecionarTodosDoUsuarioAsync(int usuarioId)
+        {
             return await contexto.Set<Extrato>()
                 .Where(e => e.UsuarioId == usuarioId)
+                .Include(e => e.Movimentacaos) // Inclui o usuário associado
                 .OrderByDescending(e => e.Id)
                 .ToListAsync();
         }
-        public void Dispose()
-        {
-        }
+
     }
 }

@@ -16,5 +16,8 @@
         T Incluir(T entity);
         T Alterar(T entity);
         void Excluir(T entity);
+        void Salvar();
+
+        void Dispose();
     }
 }

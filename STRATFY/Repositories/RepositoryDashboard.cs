@@ -1,30 +1,44 @@
-﻿using Microsoft.EntityFrameworkCore;
-using STRATFY.Helpers;
+﻿// STRATFY.Repositories/RepositoryDashboard.cs
+using Microsoft.EntityFrameworkCore;
+using STRATFY.Interfaces.IRepositories;
 using STRATFY.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using STRATFY.Interfaces.IContexts; // Para IUsuarioContexto
 
 namespace STRATFY.Repositories
 {
-    public class RepositoryDashboard : RepositoryBase<Dashboard>, IDisposable
+    public class RepositoryDashboard : RepositoryBase<Dashboard>, IRepositoryDashboard
     {
-        private readonly UsuarioContexto usuarioContexto;
-        public RepositoryDashboard(AppDbContext context, UsuarioContexto usuariocontexto, bool pSaveChanges = true) : base(context, pSaveChanges)
+        private readonly IUsuarioContexto _usuarioContexto;
+
+        public RepositoryDashboard(AppDbContext context, IUsuarioContexto usuarioContexto, bool pSaveChanges = true) : base(context, pSaveChanges)
         {
-            usuarioContexto = usuariocontexto;
+            _usuarioContexto = usuarioContexto;
         }
 
-        public async Task<List<Dashboard>> SelecionarTodosDoUsuarioAsync()
+        public async Task<List<Dashboard>> SelecionarTodosDoUsuarioAsync(int usuarioId)
         {
-            var usuarioId = usuarioContexto.ObterUsuarioId();
+            // Assumindo que Dashboard tenha um UserId ou que Extrato tenha um UserId
+            // Se o Dashboard não tiver UserId direto, você pode precisar incluir o Extrato para filtrar pelo UserId
             return await contexto.Set<Dashboard>()
-                .Where(e => e.Extrato != null && e.Extrato.UsuarioId == usuarioId) // Verifica se Extrato não é nulo
-                .Include(e => e.Extrato)
-                .Include(e => e.Cartoes)
-                .Include(e => e.Graficos)
-                .OrderByDescending(e => e.Id)
-                .ToListAsync();
+                                 .Include(d => d.Extrato) // Inclui o Extrato se necessário.Include(d => d.Extrato)
+                                 .Include(d => d.Graficos) // Inclui os gráficos associados
+                                 .Include(d => d.Cartoes) // Inclui os cartões associados
+                                 .Where(d => d.Extrato.UsuarioId == usuarioId) // Adapte conforme seu modelo
+                                 .ToListAsync();
         }
-        public void Dispose()
+
+        public async Task<Dashboard> SelecionarDashboardCompletoPorIdAsync(int dashboardId)
         {
+            return await contexto.Set<Dashboard>()
+                                 .Include(d => d.Extrato)
+                                 .ThenInclude(e => e.Movimentacaos)
+                                 .ThenInclude(m => m.Categoria)
+                                 .Include(d => d.Graficos)
+                                 .Include(d => d.Cartoes)
+                                 .FirstOrDefaultAsync(d => d.Id == dashboardId);
         }
     }
 }

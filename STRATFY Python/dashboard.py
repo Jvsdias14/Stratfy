@@ -51,7 +51,7 @@ if dashboard_id:
         data = response.json()
         df = pd.DataFrame(data["movimentacoes"])
         df.columns = df.columns.str.lower()
-        st.title(f"Dashboard: {data['dashboard']['descricao']}")
+        st.title(f"Dashboard: {data['descricao']}")
 
         # ====== Filtros na barra lateral ======
         st.sidebar.header("Configurações")

@@ -1,87 +1,78 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using STRATFY.Models;
-using STRATFY.Repositories;
 using Microsoft.AspNetCore.Authorization;
-using STRATFY.Helpers;
-using System.Security.Claims;
-using STRATFY.Interfaces.IRepositories;
-using STRATFY.Interfaces.IServices;
+using STRATFY.Interfaces.IServices; // Usar as interfaces das Services
+using STRATFY.Models; // Para Extrato e Movimentacao (ViewModels)
+using System; // Para Exception
+using System.Threading.Tasks;
+using System.Collections.Generic; // Para List
 
 namespace STRATFY.Controllers
 {
     [Authorize]
     public class ExtratosController : Controller
     {
-        private readonly RepositoryExtrato _extratoRepository;
-        private readonly RepositoryUsuario _usuarioRepository;
-        private readonly IRepositoryBase<Categoria> _categoriaRepository;
-        private readonly RepositoryMovimentacao _movRepository;
-        private readonly ICsvExportService _csvExportService;
-        private readonly AppDbContext _context;
+        private readonly IExtratoService _extratoService;
+        private readonly ICategoriaService _categoriaService; // Para popular o SelectList de categorias
 
-        public ExtratosController(AppDbContext context, RepositoryExtrato extratoRepository, RepositoryUsuario usuarioRepo, 
-            RepositoryMovimentacao movRepository, IRepositoryBase<Categoria> categoriaRepository, ICsvExportService csvExportService)
+        // A Controller agora só injeta as Services de alto nível
+        public ExtratosController(IExtratoService extratoService, ICategoriaService categoriaService)
         {
-            _context = context;
-            _extratoRepository = extratoRepository;
-            _usuarioRepository = usuarioRepo;
-            _movRepository = movRepository;
-            _categoriaRepository = categoriaRepository;
-            _csvExportService = csvExportService;
+            _extratoService = extratoService;
+            _categoriaService = categoriaService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userId))
+            try
             {
-
-                return RedirectToAction("Login", "Account"); 
+                // A Service já lida com o userId internamente
+                var viewModel = await _extratoService.ObterExtratosDoUsuarioParaIndexAsync();
+                return View(viewModel);
             }
-
-            int userIdInt;
-            if (!int.TryParse(userId, out userIdInt))
+            catch (UnauthorizedAccessException)
             {
-                return BadRequest("ID de usuário inválido.");
+                // Se o usuário não estiver autenticado ou o ID for inválido (mesmo com [Authorize])
+                return RedirectToAction("Login", "Account");
             }
-
-
-
-            var viewModel = _context.Extratos
-                .Where(e => e.UsuarioId == userIdInt) 
-                .Select(e => new ExtratoIndexViewModel
-                {
-                    Id = e.Id,
-                    Nome = e.Nome,
-                    DataCriacao = e.DataCriacao, 
- 
-                    DataInicioMovimentacoes = e.Movimentacaos.Any() ? e.Movimentacaos.Min(m => (DateOnly?)m.DataMovimentacao) : null,
-                    DataFimMovimentacoes = e.Movimentacaos.Any() ? e.Movimentacaos.Max(m => (DateOnly?)m.DataMovimentacao) : null,
-                    TotalMovimentacoes = e.Movimentacaos.Count()
-                })
-                .OrderByDescending(e => e.Id)
-                .ToList();
-
-            return View(viewModel);
-
+            catch (Exception ex)
+            {
+                // Capturar outras exceções da Service e lidar adequadamente
+                TempData["ErrorMessage"] = "Ocorreu um erro ao carregar os extratos: " + ex.Message;
+                // Logar o erro (ex: com um logger)
+                return View(new List<ExtratoIndexViewModel>()); // Retorna uma lista vazia ou erro
+            }
         }
-
 
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
                 return NotFound();
 
-            var extrato = _extratoRepository.CarregarExtratoCompleto(id.Value);
-            if (extrato == null)
-                return NotFound();
+            try
+            {
+                // Delega para a Service
+                var extrato = await _extratoService.ObterExtratoDetalhesAsync(id.Value);
 
-            return View(extrato);
+                if (extrato == null) // A service pode retornar null ou lançar exceção se não encontrar ou acesso negado
+                    return NotFound();
+
+                return View(extrato);
+            }
+            catch (ApplicationException) // Captura a exceção de acesso negado ou não encontrado da Service
+            {
+                return NotFound(); // Ou Forbid() se você quiser ser mais explícito sobre a permissão
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocorreu um erro ao carregar os detalhes do extrato: " + ex.Message;
+                return NotFound(); // Ou View("Error")
+            }
         }
 
         public IActionResult Create()
@@ -91,178 +82,117 @@ namespace STRATFY.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Nome,DataCriacao")] Extrato extrato, IFormFile csvFile)
+        public async Task<IActionResult> Create([Bind("Nome")] Extrato extrato, IFormFile csvFile) // Removido DataCriacao do Bind, a service define
         {
-            ModelState.Remove("Usuario");
-            ModelState.Remove("csvFile");
+            // Remove as validações de propriedades que serão preenchidas pela Service ou não são enviadas pelo form
+            ModelState.Remove("Usuario"); // A service vai definir o UsuarioId
+            ModelState.Remove("DataCriacao"); // A service vai definir a DataCriacao
+            ModelState.Remove("csvFile"); // Não faz parte do modelo de dados da entidade Extrato
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                extrato.Usuario = await _usuarioRepository.ObterUsuarioLogado();
-                extrato.DataCriacao = DateOnly.FromDateTime(DateTime.Now);
-                await _extratoRepository.IncluirAsync(extrato);
-
-                if (csvFile != null && csvFile.Length > 0)
-                {
-                    using var memoryStream = new MemoryStream();
-                    await csvFile.CopyToAsync(memoryStream);
-                    var byteArrayContent = new ByteArrayContent(memoryStream.ToArray());
-
-                    using var httpClient = new HttpClient();
-                    using var form = new MultipartFormDataContent();
-                    form.Add(byteArrayContent, "file", csvFile.FileName);
-
-                    var response = await httpClient.PostAsync("http://localhost:8000/api/uploadcsv", form);
-
-                    var erro = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine("Erro ao enviar CSV para API: " + erro);
-
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var content = await response.Content.ReadAsStringAsync();
-                        var movimentacoes = JsonSerializer.Deserialize<List<Movimentacao>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                        if (movimentacoes != null && movimentacoes.Any())
-                        {
-                            foreach (var mov in movimentacoes)
-                            {
-                                mov.ExtratoId = extrato.Id;
-
-                                var categoriaEncontrada = _categoriaRepository.SelecionarChave(mov.Categoria.Id);
-
-                                if (categoriaEncontrada != null)
-                                {
-                                    mov.Categoria = categoriaEncontrada;
-                                }
-                                else
-                                {
-                                    // Lógica para criar uma nova categoria
-                                    var novaCategoria = new Categoria
-                                    {
-                                        Id = 0, // Indica que é uma nova categoria a ser criada
-                                        Nome = mov.Categoria.Nome
-                                    };
-                                    mov.Categoria = novaCategoria;
-                                    // _context.Categoria.Add(novaCategoria); // Se o contexto rastrear novas entidades
-                                }
-
-                                _movRepository.Incluir(mov);
-                            }
-                        
-                            _movRepository.Salvar();
-                        }
-                    }
-                }
-
-                return RedirectToAction("Edit", new { id = extrato.Id });
+                // Se o ModelState ainda não for válido após remover, retorna a View com erros
+                return View(extrato);
             }
 
-            ViewData["UsuarioId"] = _extratoRepository.SelecionarChaveAsync(extrato.UsuarioId);
-            return View(extrato);
+            try
+            {
+                // Delega para a Service: A service lida com userId, DataCriacao e processamento do CSV
+                var extratoId = await _extratoService.CriarExtratoComMovimentacoesAsync(extrato, csvFile);
+                return RedirectToAction("Edit", new { id = extratoId });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            catch (ApplicationException ex)
+            {
+                ModelState.AddModelError("", ex.Message); // Adiciona a mensagem de erro ao ModelState
+                return View(extrato);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Ocorreu um erro inesperado ao criar o extrato: " + ex.Message);
+                return View(extrato);
+            }
         }
-
 
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
                 return NotFound();
 
-            var extrato = _extratoRepository.CarregarExtratoCompleto(id.Value);
-
-            if (extrato == null)
-                return NotFound();
-
-            var viewModel = new ExtratoEdicaoViewModel
+            try
             {
-                ExtratoId = extrato.Id,
-                NomeExtrato = extrato.Nome,
-                DataCriacao = extrato.DataCriacao,
-                Movimentacoes = extrato.Movimentacaos.Select(m => new Movimentacao
-                {
-                    Id = m.Id,
-                    Descricao = m.Descricao,
-                    Valor = m.Valor,
-                    Tipo = m.Tipo,
-                    Categoria = m.Categoria,
-                    ExtratoId = m.ExtratoId,
-                    DataMovimentacao = m.DataMovimentacao
-                }).ToList()
-            };
+                // Delega para a Service
+                var viewModel = await _extratoService.ObterExtratoParaEdicaoAsync(id.Value);
 
-            ViewData["CategoriaId"] = new SelectList(_categoriaRepository.SelecionarTodos(), "Id", "Nome");
-            return View(viewModel);
+                if (viewModel == null) // A service pode retornar null ou lançar exceção se não encontrar ou acesso negado
+                    return NotFound();
+
+                // Popula o ViewData para o SelectList usando a CategoriaService
+                ViewData["CategoriaId"] = new SelectList(_categoriaService.ObterTodasCategoriasParaSelectList(), "Id", "Nome");
+                return View(viewModel);
+            }
+            catch (ApplicationException) // Captura a exceção de acesso negado ou não encontrado da Service
+            {
+                return NotFound();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocorreu um erro ao carregar o extrato para edição: " + ex.Message;
+                return NotFound();
+            }
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(ExtratoEdicaoViewModel model)
         {
-            // Remova a validação para Categoria.Nome em cada Movimentacao
+            // Remova a validação para Categoria.Nome em cada Movimentacao (se CategoriaId for o suficiente)
+            // Cuidado: Dependendo do seu ViewModel, você pode precisar ajustar a validação aqui.
+            // A service de Movimentacao agora valida se Categoria.Id é válido.
             foreach (var mov in model.Movimentacoes)
             {
                 ModelState.Remove($"Movimentacoes[{model.Movimentacoes.IndexOf(mov)}].Categoria.Nome");
+                // Remova outras validações se a Service for responsável por elas
+                // Ex: ModelState.Remove($"Movimentacoes[{model.Movimentacoes.IndexOf(mov)}].CategoriaId"); // Se a service buscar a categoria pelo nome
             }
 
             if (!ModelState.IsValid)
             {
-                ViewData["CategoriaId"] = new SelectList(_categoriaRepository.SelecionarTodos(), "Id", "Nome", model.Movimentacoes.Select(m => m.CategoriaId).ToList());
+                // Se o ModelState ainda não for válido, repopula o SelectList e retorna a View com erros
+                ViewData["CategoriaId"] = new SelectList(_categoriaService.ObterTodasCategoriasParaSelectList(), "Id", "Nome");
                 return View(model);
             }
 
-            var extrato = _extratoRepository.CarregarExtratoCompleto(model.ExtratoId);
-            if (extrato == null)
-                return NotFound();
-
-            extrato.Nome = model.NomeExtrato;
-
-            var idsRecebidos = model.Movimentacoes.Select(m => m.Id).ToList();
-            var movimentacoesRemovidas = extrato.Movimentacaos.Where(m => !idsRecebidos.Contains(m.Id)).ToList();
-            _movRepository.RemoverVarias(movimentacoesRemovidas);
-
-            foreach (var mov in model.Movimentacoes)
+            try
             {
-
-                if (mov.Categoria.Id <= 0)
-                {
-                    ModelState.AddModelError($"Movimentacoes[{model.Movimentacoes.IndexOf(mov)}].CategoriaId", "A categoria é obrigatória.");
-                    ViewData["CategoriaId"] = new SelectList(_categoriaRepository.SelecionarTodos(), "Id", "Nome", model.Movimentacoes.Select(m => m.CategoriaId).ToList());
-                    return View(model);
-                }
-
-                if (mov.Id == 0)
-                {
-                    var novaMovimentacao = new Movimentacao
-                    {
-                        Descricao = mov.Descricao,
-                        Valor = mov.Valor,
-                        Tipo = mov.Tipo,
-                        CategoriaId = mov.Categoria.Id, 
-                        DataMovimentacao = mov.DataMovimentacao,
-                        ExtratoId = model.ExtratoId
-                    };
-
-                    novaMovimentacao.Categoria = null;
-
-                    _movRepository.Incluir(novaMovimentacao);
-                }
-                else
-                {
-                    var movBanco = _movRepository.SelecionarChave(mov.Id);
-                    if (movBanco != null)
-                    {
-                        movBanco.Descricao = mov.Descricao;
-                        movBanco.Valor = mov.Valor;
-                        movBanco.Tipo = mov.Tipo;
-                        movBanco.CategoriaId = mov.Categoria.Id;
-                        movBanco.DataMovimentacao = mov.DataMovimentacao;
-                    }
-                }
+                // Delega para a Service: A service lida com a atualização do extrato e de suas movimentações
+                await _extratoService.AtualizarExtratoEMovimentacoesAsync(model);
+                TempData["SuccessMessage"] = "Extrato e movimentações atualizados com sucesso!";
+                return RedirectToAction(nameof(Index));
             }
-
-            // Salva tudo de uma vez ao final
-            _extratoRepository.Salvar();
-            return RedirectToAction(nameof(Index));
+            catch (ApplicationException ex)
+            {
+                ModelState.AddModelError("", ex.Message); // Adiciona o erro ao ModelState
+                ViewData["CategoriaId"] = new SelectList(_categoriaService.ObterTodasCategoriasParaSelectList(), "Id", "Nome");
+                return View(model);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Ocorreu um erro inesperado ao atualizar o extrato: " + ex.Message);
+                ViewData["CategoriaId"] = new SelectList(_categoriaService.ObterTodasCategoriasParaSelectList(), "Id", "Nome");
+                return View(model);
+            }
         }
 
         public async Task<IActionResult> Delete(int? id)
@@ -270,53 +200,102 @@ namespace STRATFY.Controllers
             if (id == null)
                 return NotFound();
 
-            var extrato = _extratoRepository.CarregarExtratoCompleto(id.Value);
-            if (extrato == null)
-                return NotFound();
+            try
+            {
+                // Delega para a Service
+                var extrato = await _extratoService.ObterExtratoDetalhesAsync(id.Value); // Use ObterExtratoDetalhesAsync para carregar completo e validar acesso
 
-            return View(extrato);
+                if (extrato == null)
+                    return NotFound();
+
+                return View(extrato);
+            }
+            catch (ApplicationException)
+            {
+                return NotFound();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocorreu um erro ao carregar o extrato para exclusão: " + ex.Message;
+                return NotFound();
+            }
         }
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var extrato = _extratoRepository.SelecionarChave(id);
             try
             {
-                if (extrato != null)
-                    _extratoRepository.Excluir(extrato);
-
-                return RedirectToAction(nameof(Index));
+                // Delega para a Service
+                var success = await _extratoService.ExcluirExtratoAsync(id);
+                if (success)
+                {
+                    TempData["SuccessMessage"] = "Extrato excluído com sucesso!";
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    // Se a service retornar false (por não encontrar ou erro interno não lançado como exceção)
+                    TempData["ErrorMessage"] = "Não foi possível excluir o extrato.";
+                    return RedirectToAction(nameof(Delete), new { id });
+                }
             }
-            catch
+            catch (ApplicationException ex)
             {
-                TempData["DeleteError"] = "Não foi possível excluir o extrato porque ele possui movimentações vinculadas.";
+                // Mensagem de erro específica da Service, como "Não foi possível excluir porque possui movimentações"
+                TempData["DeleteError"] = ex.Message;
+                return RedirectToAction(nameof(Delete), new { id });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            catch (Exception ex)
+            {
+                TempData["DeleteError"] = "Ocorreu um erro inesperado ao excluir o extrato: " + ex.Message;
                 return RedirectToAction(nameof(Delete), new { id });
             }
         }
+
         [HttpGet]
-        public async Task<IActionResult> DownloadCsv(int id) // 'id' é o ID do Extrato
+        public async Task<IActionResult> DownloadCsv(int id)
         {
-            var extrato = _extratoRepository.CarregarExtratoCompleto(id);
-            //var extrato = await _context.Extratos
-            //    .Include(e => e.Movimentacaos) // <--- CRUCIAL: Carrega as movimentações do extrato
-            //    .FirstOrDefaultAsync(e => e.Id == id);
-
-            if (extrato == null)
+            try
             {
-                return NotFound(); 
-            }
+                // Delega para a Service
+                var csvStream = await _extratoService.ExportarMovimentacoesDoExtratoParaCsvAsync(id);
 
-            if (extrato.Movimentacaos == null || !extrato.Movimentacaos.Any())
+                if (csvStream == null) // Service retorna null se extrato não for encontrado ou acesso negado
+                {
+                    return NotFound();
+                }
+
+                // Você pode querer buscar o nome do extrato para o nome do arquivo,
+                // mas a Service de Exportação pode retornar isso também.
+                // Por simplicidade, usaremos um nome genérico ou tentaremos obter do extrato carregado na Service
+                var extrato = await _extratoService.ObterExtratoDetalhesAsync(id); // Reobtem o extrato apenas para o nome, se necessário
+                var fileName = extrato != null ? $"Extrato_{extrato.Nome}_{DateTime.Now:yyyyMMdd_HHmmss}.csv" : $"Extrato_Movimentacoes_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+
+                return File(csvStream, "text/csv; charset=utf-8", fileName);
+            }
+            catch (ApplicationException)
             {
-                var emptyCsvStream = await _csvExportService.ExportMovimentacoesToCsvAsync(new List<Movimentacao>());
-                return File(emptyCsvStream, "text/csv", $"Extrato_{extrato.Nome}_Movimentacoes.csv");
+                return NotFound();
             }
-
-            var csvStream = await _csvExportService.ExportMovimentacoesToCsvAsync(extrato.Movimentacaos);
-
-            return File(csvStream, "text/csv; charset=utf-8", $"Extrato_{extrato.Nome}_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+            catch (UnauthorizedAccessException)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocorreu um erro ao exportar o CSV: " + ex.Message;
+                return BadRequest(); // Ou outra resposta de erro
+            }
         }
     }
 }

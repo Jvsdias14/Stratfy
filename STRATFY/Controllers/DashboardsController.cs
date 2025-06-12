@@ -1,35 +1,52 @@
-﻿using System;
+﻿// STRATFY.Controllers/DashboardsController.cs
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Rendering; // Para SelectListItem
+using STRATFY.Interfaces.IServices;
 using STRATFY.Models;
-using STRATFY.Repositories;
+using STRATFY.DTOs; // Usar os DTOs da API
 
 namespace STRATFY.Controllers
 {
     [Authorize]
     public class DashboardsController : Controller
     {
-        private readonly AppDbContext _context;
-        private readonly RepositoryDashboard _dashboardRepository;
-        private readonly RepositoryExtrato _extratoRepository;
+        private readonly IDashboardService _dashboardService;
+        // O IUsuarioContexto pode ser injetado diretamente na Service e não ser necessário aqui,
+        // dependendo de onde você decide fazer as validações de usuário.
+        // Se as services já fazem a validação baseada no usuário logado, ele pode ser removido daqui.
+        // private readonly IUsuarioContexto _usuarioContexto;
 
-        public DashboardsController(AppDbContext context, RepositoryDashboard repositoryDashboard, RepositoryExtrato extratoRepository)
+        public DashboardsController(IDashboardService dashboardService) // Removi IUsuarioContexto daqui
         {
-            _context = context;
-            _dashboardRepository = repositoryDashboard;
-            _extratoRepository = extratoRepository;
+            _dashboardService = dashboardService;
+            // _usuarioContexto = usuarioContexto;
         }
 
         // GET: Dashboards
         public async Task<IActionResult> Index()
         {
-            var dashboards = await _dashboardRepository.SelecionarTodosDoUsuarioAsync();
-            return View(dashboards);
+            try
+            {
+                var dashboards = await _dashboardService.ObterTodosDashboardsDoUsuarioAsync();
+                return View(dashboards);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                TempData["ErrorMessage"] = "Você precisa estar logado para acessar os dashboards.";
+                return RedirectToAction("Index", "Login");
+            }
+            catch (Exception ex)
+            {
+                // Logar o erro completo para depuração
+                // _logger.LogError(ex, "Erro ao carregar dashboards na Index.");
+                TempData["ErrorMessage"] = "Ocorreu um erro ao carregar seus dashboards. " + ex.Message;
+                return View(new List<STRATFY.Models.Dashboard>()); // Retorna uma lista vazia para evitar null
+            }
         }
 
         // GET: Dashboards/Details/5
@@ -40,68 +57,93 @@ namespace STRATFY.Controllers
                 return NotFound();
             }
 
-            var dashboard = await _context.Dashboards
-                .Include(d => d.Extrato)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (dashboard == null)
+            try
             {
+                var dashboard = await _dashboardService.ObterDashboardPorIdAsync(id.Value);
+                if (dashboard == null)
+                {
+                    // Se a service retorna null, é porque não encontrou ou não pertence ao usuário
+                    TempData["ErrorMessage"] = "Dashboard não encontrado ou você não tem permissão para visualizá-lo.";
+                    return NotFound();
+                }
+                return View(dashboard);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                TempData["ErrorMessage"] = "Acesso não autorizado para visualizar este dashboard.";
+                return RedirectToAction("Index", "Login");
+            }
+            catch (Exception ex)
+            {
+                // _logger.LogError(ex, "Erro ao carregar detalhes do dashboard.");
+                TempData["ErrorMessage"] = "Ocorreu um erro ao carregar os detalhes do dashboard: " + ex.Message;
                 return NotFound();
             }
-
-            return View(dashboard);
         }
 
         // GET: Dashboards/Create
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            var extratos = await _extratoRepository.SelecionarTodosDoUsuarioAsync();
-
             var model = new DashboardVM
             {
-                ExtratosDisponiveis = extratos.Select(e => new SelectListItem
-                {
-                    Value = e.Id.ToString(),
-                    Text = e.Nome
-                }).ToList()
+                ExtratosDisponiveis = await _dashboardService.ObterExtratosDisponiveisParaUsuarioAsync()
             };
-
             return View(model);
         }
 
-
-
         [HttpPost]
-        public IActionResult Create(DashboardVM model, string action)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(DashboardVM model, string action)
         {
             if (action == "padrao")
             {
+                // Redireciona para o método de criação padrão
                 return RedirectToAction("CriarPadrao", new { nome = model.Nome, extratoId = model.ExtratoId });
             }
+
+            // Remove ModelState para propriedades que não vêm da UI ou são apenas para exibição
             ModelState.Remove("ExtratosDisponiveis");
+            // Se você está postando Graficos/Cartoes vazios ou incompletos na criação normal, pode precisar limpar o ModelState deles também
+            for (int i = 0; i < model.Graficos?.Count; i++) { ModelState.Remove($"Graficos[{i}].Dashboard"); }
+            for (int i = 0; i < model.Cartoes?.Count; i++) { ModelState.Remove($"Cartoes[{i}].Dashboard"); }
+
+
             if (!ModelState.IsValid)
             {
-                model.ExtratosDisponiveis = ObterListaExtratos();
+                model.ExtratosDisponiveis = await _dashboardService.ObterExtratosDisponiveisParaUsuarioAsync();
                 return View(model);
             }
 
-            var dashboard = new Dashboard
+            try
             {
-                Descricao = model.Nome,
-                ExtratoId = model.ExtratoId
-            };
+                var dashboard = await _dashboardService.CriarDashboardAsync(model);
+                TempData["SuccessMessage"] = "Dashboard criado com sucesso!";
+                return RedirectToAction("Edit", new { id = dashboard.Id });
+            }
+            catch (ApplicationException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                TempData["ErrorMessage"] = "Você não tem permissão para realizar esta ação.";
+                return RedirectToAction("Index", "Login");
+            }
+            catch (Exception ex)
+            {
+                // _logger.LogError(ex, "Erro inesperado ao criar dashboard.");
+                ModelState.AddModelError(string.Empty, "Ocorreu um erro inesperado ao criar o dashboard.");
+            }
 
-            _context.Dashboards.Add(dashboard);
-            _context.SaveChanges();
-
-            return RedirectToAction("Edit", new { id = dashboard.Id });
+            // Se houve erro, recarrega a lista de extratos e retorna a view com os erros
+            model.ExtratosDisponiveis = await _dashboardService.ObterExtratosDisponiveisParaUsuarioAsync();
+            return View(model);
         }
-
-
 
         // Botão Criar Dash Padrão
         [HttpGet]
-        public IActionResult CriarPadrao(string nome, int extratoId)
+        public async Task<IActionResult> CriarPadrao(string nome, int extratoId)
         {
             if (string.IsNullOrWhiteSpace(nome) || extratoId == 0)
             {
@@ -109,174 +151,160 @@ namespace STRATFY.Controllers
                 {
                     Nome = nome,
                     ExtratoId = extratoId,
-                    ExtratosDisponiveis = ObterListaExtratos()
+                    ExtratosDisponiveis = await _dashboardService.ObterExtratosDisponiveisParaUsuarioAsync()
                 };
-                ModelState.AddModelError("", "Preencha todos os campos obrigatórios.");
+                ModelState.AddModelError(string.Empty, "Preencha todos os campos obrigatórios.");
                 return View("Create", model);
             }
 
-            var graficosPadrao = new List<Grafico>
-    {
-        new Grafico { Titulo = "Gasto diário", Campo1 = "Datamovimentacao", Campo2 = "Valor", Tipo = "Barra", Cor = "#3366cc", AtivarLegenda = false },
-        new Grafico { Titulo = "Gasto por categoria", Campo1 = "Categoria", Campo2 = "Valor", Tipo = "Pizza", Cor = "#3366cc", AtivarLegenda = false }
-    };
-
-            var cartoesPadrao = new List<Cartao>
-    {
-        new Cartao { Nome = "Total de Gastos", Campo = "Valor", TipoAgregacao = "soma", Cor = "#3366cc" },
-        new Cartao { Nome = "Média de Gastos", Campo = "Valor", TipoAgregacao = "media", Cor = "#3366cc" },
-        new Cartao { Nome = "Movimentações", Campo = "Valor", TipoAgregacao = "contagem", Cor = "#3366cc" }
-    };
-
-            var dashboard = new Dashboard
+            try
             {
-                Descricao = nome,
+                var dashboard = await _dashboardService.CriarDashboardPadraoAsync(nome, extratoId);
+                TempData["SuccessMessage"] = "Dashboard padrão criado com sucesso!";
+                return RedirectToAction("Details", new { id = dashboard.Id });
+            }
+            catch (ApplicationException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                TempData["ErrorMessage"] = "Você não tem permissão para realizar esta ação.";
+                return RedirectToAction("Index", "Login");
+            }
+            catch (Exception ex)
+            {
+                // _logger.LogError(ex, "Erro inesperado ao criar dashboard padrão.");
+                ModelState.AddModelError(string.Empty, "Ocorreu um erro inesperado ao criar o dashboard padrão.");
+            }
+
+            // Se houve erro, recarrega a lista de extratos e retorna a view de Create
+            var modelErro = new DashboardVM
+            {
+                Nome = nome,
                 ExtratoId = extratoId,
-                Graficos = graficosPadrao,
-                Cartoes = cartoesPadrao
+                ExtratosDisponiveis = await _dashboardService.ObterExtratosDisponiveisParaUsuarioAsync()
             };
-
-            _context.Dashboards.Add(dashboard);
-            _context.SaveChanges();
-
-            return RedirectToAction("Details", new { id = dashboard.Id });
+            return View("Create", modelErro);
         }
 
         [HttpGet("api/dashboarddata/{id}")]
-        [AllowAnonymous]
-        public IActionResult GetDashboardData(int id)
+        [AllowAnonymous] // Ajuste conforme a necessidade de autenticação para a API
+        public async Task<IActionResult> GetDashboardData(int id)
         {
-            var dashboard = _context.Dashboards
-                .Include(d => d.Graficos)
-                .Include(d => d.Cartoes)
-                .Include(d => d.Extrato)
-                    .ThenInclude(e => e.Movimentacaos)
-                     .ThenInclude(m => m.Categoria)
-                .FirstOrDefault(d => d.Id == id);
-
-            if (dashboard == null)
-                return NotFound();
-
-            var result = new
+            try
             {
-                Dashboard = new { dashboard.Id, dashboard.Descricao },
-                Extrato = dashboard.Extrato.Nome,
-                Movimentacoes = dashboard.Extrato.Movimentacaos.Select(m => new
+                var dashboardData = await _dashboardService.ObterDadosDashboardParaApiAsync(id);
+                if (dashboardData == null)
                 {
-                    m.DataMovimentacao,
-                    m.Descricao,
-                    m.Valor,
-                    m.Tipo,
-                    Categoria = m.Categoria != null ? m.Categoria.Nome : null
-                }),
-                Graficos = dashboard.Graficos.Select(g => new
-                {
-                    g.Titulo,
-                    g.Campo1,
-                    g.Campo2,
-                    g.Tipo,
-                    g.Cor,
-                    g.AtivarLegenda
-                }),
-                Cartoes = dashboard.Cartoes.Select(c => new
-                {
-                    c.Nome,
-                    c.Campo,
-                    c.TipoAgregacao,
-                    c.Cor
-                })
-            };
-
-            return Ok(result);
-        }
-
-
-        private List<SelectListItem> ObterListaExtratos()
-        {
-            return _context.Extratos.Select(e => new SelectListItem
+                    return NotFound();
+                }
+                return Ok(dashboardData);
+            }
+            catch (ApplicationException ex)
             {
-                Value = e.Id.ToString(),
-                Text = e.Nome
-            }).ToList();
+                // Para APIs, retorne um BadRequest com a mensagem de erro
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return StatusCode(403, new { message = "Acesso não autorizado." }); // Forbidden
+            }
+            catch (Exception ex)
+            {
+                // _logger.LogError(ex, "Erro na API GetDashboardData.");
+                return StatusCode(500, new { message = "Ocorreu um erro interno do servidor." });
+            }
         }
 
         // GET: Dashboards/Edit/5
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var dashboard = _context.Dashboards
-                .Include(d => d.Graficos)
-                .Include(d => d.Cartoes)
-                .FirstOrDefault(d => d.Id == id);
-
-            if (dashboard == null)
-                return NotFound();
-
-            var model = new DashboardVM
+            try
             {
-                Id = dashboard.Id,
-                Nome = dashboard.Descricao,
-                ExtratoId = dashboard.ExtratoId,
-                Graficos = dashboard.Graficos.ToList(),
-                Cartoes = dashboard.Cartoes.ToList(),
-            };
-            var extratos = await _extratoRepository.SelecionarTodosDoUsuarioAsync();
-            {
-                model.ExtratosDisponiveis = extratos.Select(e => new SelectListItem
+                var dashboard = await _dashboardService.ObterDashboardPorIdAsync(id);
+                if (dashboard == null)
                 {
-                    Value = e.Id.ToString(),
-                    Text = e.Nome
-                }).ToList();
-            };
+                    TempData["ErrorMessage"] = "Dashboard não encontrado ou você não tem permissão para editá-lo.";
+                    return NotFound();
+                }
 
-            return View(model);
+                var model = new DashboardVM
+                {
+                    Id = dashboard.Id,
+                    Nome = dashboard.Descricao,
+                    ExtratoId = dashboard.ExtratoId,
+                    Graficos = dashboard.Graficos.ToList(), // Carrega os gráficos e cartões existentes
+                    Cartoes = dashboard.Cartoes.ToList(),
+                    ExtratosDisponiveis = await _dashboardService.ObterExtratosDisponiveisParaUsuarioAsync()
+                };
+
+                return View(model);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                TempData["ErrorMessage"] = "Acesso não autorizado para editar este dashboard.";
+                return RedirectToAction("Index", "Login");
+            }
+            catch (Exception ex)
+            {
+                // _logger.LogError(ex, "Erro ao carregar dashboard para edição.");
+                TempData["ErrorMessage"] = "Ocorreu um erro ao carregar o dashboard para edição: " + ex.Message;
+                return NotFound();
+            }
         }
 
         // POST: Dashboards/Edit/5
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(DashboardVM model)
         {
-
+            // Remover do ModelState propriedades de navegação ou listas que não são postadas diretamente,
+            // ou que seriam validadas de forma circular.
             ModelState.Remove("ExtratosDisponiveis");
-
             for (int i = 0; i < model.Graficos?.Count; i++)
             {
                 ModelState.Remove($"Graficos[{i}].Dashboard");
+                ModelState.Remove($"Graficos[{i}].DashboardId"); // Se DashboardId for uma propriedade em Grafico
             }
 
             for (int i = 0; i < model.Cartoes?.Count; i++)
             {
                 ModelState.Remove($"Cartoes[{i}].Dashboard");
+                ModelState.Remove($"Cartoes[{i}].DashboardId"); // Se DashboardId for uma propriedade em Cartao
             }
 
             if (!ModelState.IsValid)
             {
-                model.ExtratosDisponiveis = ObterListaExtratos();
+                model.ExtratosDisponiveis = await _dashboardService.ObterExtratosDisponiveisParaUsuarioAsync();
                 return View(model);
             }
 
-            var dashboard = _context.Dashboards
-                .Include(d => d.Graficos)
-                .Include(d => d.Cartoes)
-                .FirstOrDefault(d => d.Id == model.Id);
+            try
+            {
+                await _dashboardService.AtualizarDashboardAsync(model);
+                TempData["SuccessMessage"] = "Dashboard atualizado com sucesso!";
+                return RedirectToAction("Details", new { id = model.Id });
+            }
+            catch (ApplicationException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                TempData["ErrorMessage"] = "Você não tem permissão para realizar esta ação.";
+                return RedirectToAction("Index", "Login");
+            }
+            catch (Exception ex)
+            {
+                // _logger.LogError(ex, "Erro inesperado ao atualizar dashboard.");
+                ModelState.AddModelError(string.Empty, "Ocorreu um erro inesperado ao atualizar o dashboard.");
+            }
 
-            if (dashboard == null)
-                return NotFound();
-
-            dashboard.Descricao = model.Nome;
-            dashboard.ExtratoId = model.ExtratoId;
-
-            dashboard.Graficos = model.Graficos;
-            dashboard.Cartoes = model.Cartoes;
-
-            _context.Update(dashboard);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction("Details", new { id = dashboard.Id });
+            model.ExtratosDisponiveis = await _dashboardService.ObterExtratosDisponiveisParaUsuarioAsync();
+            return View(model);
         }
-
-
-
 
         // GET: Dashboards/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -286,15 +314,27 @@ namespace STRATFY.Controllers
                 return NotFound();
             }
 
-            var dashboard = await _context.Dashboards
-                .Include(d => d.Extrato)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (dashboard == null)
+            try
             {
+                var dashboard = await _dashboardService.ObterDashboardPorIdAsync(id.Value);
+                if (dashboard == null)
+                {
+                    TempData["ErrorMessage"] = "Dashboard não encontrado ou você não tem permissão para excluí-lo.";
+                    return NotFound();
+                }
+                return View(dashboard);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                TempData["ErrorMessage"] = "Acesso não autorizado para excluir este dashboard.";
+                return RedirectToAction("Index", "Login");
+            }
+            catch (Exception ex)
+            {
+                // _logger.LogError(ex, "Erro ao carregar dashboard para exclusão.");
+                TempData["ErrorMessage"] = "Ocorreu um erro ao carregar o dashboard para exclusão: " + ex.Message;
                 return NotFound();
             }
-
-            return View(dashboard);
         }
 
         // POST: Dashboards/Delete/5
@@ -302,19 +342,28 @@ namespace STRATFY.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var dashboard = await _context.Dashboards.FindAsync(id);
-            if (dashboard != null)
+            try
             {
-                _context.Dashboards.Remove(dashboard);
+                await _dashboardService.ExcluirDashboardAsync(id);
+                TempData["SuccessMessage"] = "Dashboard excluído com sucesso!";
+                return RedirectToAction(nameof(Index));
             }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool DashboardExists(int id)
-        {
-            return _context.Dashboards.Any(e => e.Id == id);
+            catch (ApplicationException ex)
+            {
+                TempData["DeleteError"] = ex.Message; // Exibir este erro na View de Delete, se existir
+                return RedirectToAction(nameof(Delete), new { id });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                TempData["ErrorMessage"] = "Você não tem permissão para realizar esta ação.";
+                return RedirectToAction("Index", "Login");
+            }
+            catch (Exception ex)
+            {
+                // _logger.LogError(ex, "Erro inesperado ao excluir dashboard.");
+                TempData["DeleteError"] = "Ocorreu um erro inesperado ao excluir o dashboard: " + ex.Message;
+                return RedirectToAction(nameof(Delete), new { id });
+            }
         }
     }
 }

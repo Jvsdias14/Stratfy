@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using STRATFY.Interfaces.IRepositories;
 using STRATFY.Models;
 
 namespace STRATFY.Repositories
 {
-    public class RepositoryLogin : RepositoryBase<Usuario>, IDisposable
+    public class RepositoryLogin : RepositoryBase<Usuario>, IRepositoryLogin, IDisposable
     {
         public RepositoryLogin(AppDbContext context, bool pSaveChanges = true) : base(context, pSaveChanges)
         {

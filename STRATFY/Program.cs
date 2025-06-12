@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using STRATFY.Helpers;
+using STRATFY.Interfaces.IContexts;
 using STRATFY.Interfaces.IRepositories;
 using STRATFY.Interfaces.IServices;
 using STRATFY.Models;
@@ -28,12 +29,38 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped(typeof(IRepositoryBase<>), typeof(RepositoryBase<>));
+
+// Repositórios
+builder.Services.AddScoped<IRepositoryBase<Usuario>, RepositoryBase<Usuario>>(); // Se aplicável
+builder.Services.AddScoped<IRepositoryUsuario, RepositoryUsuario>(); // << Novo registro
+
+// Helpers/Contextos
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>(); // Essencial para HttpContext
+
+
 builder.Services.AddScoped<RepositoryLogin>();
 builder.Services.AddScoped<RepositoryUsuario>();
 builder.Services.AddScoped<RepositoryExtrato>();
 builder.Services.AddScoped<RepositoryMovimentacao>();
 builder.Services.AddScoped<RepositoryDashboard>();
+
+builder.Services.AddScoped<IRepositoryUsuario, RepositoryUsuario>();
+builder.Services.AddScoped<IRepositoryExtrato, RepositoryExtrato>();
+builder.Services.AddScoped<IRepositoryDashboard, RepositoryDashboard>();
+builder.Services.AddScoped<IRepositoryLogin, RepositoryLogin>();
+builder.Services.AddScoped<IRepositoryMovimentacao, RepositoryMovimentacao>();
+
 builder.Services.AddScoped<ICsvExportService, CsvExportService>();
+builder.Services.AddScoped<IExtratoService, ExtratoService>();
+builder.Services.AddScoped<IMovimentacaoService, MovimentacaoService>();
+builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+builder.Services.AddScoped<IUsuarioContexto, UsuarioContexto>();
+
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+
+builder.Services.AddHttpClient();
 
 builder.WebHost.UseUrls("http://localhost:5211");
 

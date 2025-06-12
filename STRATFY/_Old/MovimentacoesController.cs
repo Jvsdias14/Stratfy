@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using STRATFY.Interfaces.IRepositories;
 using STRATFY.Models;
 
-namespace STRATFY.Controllers
+namespace STRATFY._Old
 {
     [Authorize]
     public class MovimentacoesController : Controller

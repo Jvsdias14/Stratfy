@@ -1,4 +1,4 @@
-﻿@model STRATFY.Models.Usuario
+﻿@model STRATFY.Models.UsuarioEditVM // <<--- MUDAR PARA A VIEWMODEL AQUI!
 @{
     ViewData["Title"] = "Edit";
 }
@@ -10,7 +10,7 @@
 <div class="d-flex justify-content-center align-items-center" style="min-height: 90vh;">
     <div class="editar_usuario">
         <h4 style="text-align:center">Alterar dados</h4>
-        <form asp-action="Edit">
+        <form asp-action="Edit" method="post"> @* Adicione method="post" para clareza *@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             <div class="form-group">
@@ -23,15 +23,24 @@
                 <input asp-for="Email" class="form-control" placeholder="Digite seu e-mail" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
+
+            <hr class="mt-4 mb-4" /> @* Separador visual para as senhas *@
+
             <div class="form-group">
-                <label asp-for="Senha" class="control-label"></label>
-                <input asp-for="Senha" class="form-control" type="password" id="senha" placeholder="Digite uma nova senha" />
-                <span asp-validation-for="Senha" class="text-danger"></span>
-                <!-- Barra de força da senha -->
+                <label asp-for="NovaSenha" class="control-label">Nova Senha</label> @* Rótulo para nova senha *@
+                <input asp-for="NovaSenha" class="form-control" type="password" id="novaSenha" placeholder="Digite uma nova senha (opcional)" />
+                <span asp-validation-for="NovaSenha" class="text-danger"></span>
                 <div id="password-strength-container" class="progress mt-2" style="height: 5px; display: none;">
                     <div id="password-strength-bar" class="progress-bar" style="width: 0%;"></div>
                 </div>
             </div>
+
+            <div class="form-group">
+                <label asp-for="ConfirmarNovaSenha" class="control-label">Confirmar Nova Senha</label> @* Rótulo para confirmar nova senha *@
+                <input asp-for="ConfirmarNovaSenha" class="form-control" type="password" id="confirmarNovaSenha" placeholder="Confirme a nova senha" />
+                <span asp-validation-for="ConfirmarNovaSenha" class="text-danger"></span>
+            </div>
+
             <div class="d-flex justify-content-between mt-4">
                 <a asp-controller="Extratos" asp-action="Index" class="btn rounded-pill">Voltar</a>
                 <button type="submit" class="btn rounded-pill">Salvar Alterações</button>
@@ -43,54 +52,55 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-    <script>
-        const senhaInput = document.getElementById('senha');
-        const strengthBar = document.getElementById('password-strength-bar');
-        const strengthContainer = document.getElementById('password-strength-container');
+        <script>
+    // Mude para o ID do campo da NOVA SENHA
+    const senhaInput = document.getElementById('novaSenha'); // <<--- MUDANÇA AQUI
+    const strengthBar = document.getElementById('password-strength-bar');
+    const strengthContainer = document.getElementById('password-strength-container');
 
-        senhaInput.addEventListener('input', () => {
-            const senha = senhaInput.value;
+    senhaInput.addEventListener('input', () => {
+        const senha = senhaInput.value;
 
-            // Mostra a barra somente se houver texto no campo de senha
-            if (senha.length > 0) {
-                strengthContainer.style.display = 'flex';
-            } else {
-                strengthContainer.style.display = 'none';
-                return; // Sai da função se a senha estiver vazia
-            }
-
-            const forca = avaliarForcaSenha(senha);
-            let width = '0%';
-            let cor = 'bg-danger'; // Vermelho por padrão
-
-            switch (forca) {
-                case 0:
-                case 1:
-                    width = '33%';
-                    cor = 'bg-danger';
-                    break;
-                case 2:
-                    width = '66%';
-                    cor = 'bg-warning';
-                    break;
-                case 3:
-                case 4:
-                    width = '100%';
-                    cor = 'bg-success';
-                    break;
-            }
-
-            strengthBar.style.width = width;
-            strengthBar.className = 'progress-bar ' + cor;
-        });
-
-        function avaliarForcaSenha(senha) {
-            let forca = 0;
-            if (senha.length >= 8) forca++;
-            if (/[A-Z]/.test(senha)) forca++;
-            if (/[0-9]/.test(senha)) forca++;
-            if (/[^A-Za-z0-9]/.test(senha)) forca++;
-            return forca;
+        // Mostra a barra somente se houver texto no campo de senha
+        if (senha.length > 0) {
+            strengthContainer.style.display = 'flex';
+        } else {
+            strengthContainer.style.display = 'none';
+            return; // Sai da função se a senha estiver vazia
         }
+
+        const forca = avaliarForcaSenha(senha);
+        let width = '0%';
+        let cor = 'bg-danger'; // Vermelho por padrão
+
+        switch (forca) {
+            case 0:
+            case 1:
+                width = '33%';
+                cor = 'bg-danger';
+                break;
+            case 2:
+                width = '66%';
+                cor = 'bg-warning';
+                break;
+            case 3:
+            case 4:
+                width = '100%';
+                cor = 'bg-success';
+                break;
+        }
+
+        strengthBar.style.width = width;
+        strengthBar.className = 'progress-bar ' + cor;
+    });
+
+    function avaliarForcaSenha(senha) {
+        let forca = 0;
+        if (senha.length >= 8) forca++;
+        if (/[A-Z]/.test(senha)) forca++;
+        if (/[0-9]/.test(senha)) forca++;
+        if (/[^A-Za-z0-9]/.test(senha)) forca++;
+        return forca;
+    }
     </script>
 }

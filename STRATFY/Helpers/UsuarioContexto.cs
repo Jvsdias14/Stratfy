@@ -1,10 +1,12 @@
-﻿using System.Security.Claims;
+﻿using STRATFY.Interfaces.IContexts;
+using System.Security.Claims;
 
 namespace STRATFY.Helpers
 {
-    public class UsuarioContexto
+    public class UsuarioContexto : IUsuarioContexto
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        public int UsuarioId { get; private set; }
 
         public UsuarioContexto(IHttpContextAccessor httpContextAccessor)
         {
@@ -14,7 +16,9 @@ namespace STRATFY.Helpers
         public int ObterUsuarioId()
         {
             var claim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier);
+            //UsuarioId = claim != null ? int.Parse(claim.Value) : 0;
             return claim != null ? int.Parse(claim.Value) : 0;
+
         }
 
         public string ObterUsuarioEmail()

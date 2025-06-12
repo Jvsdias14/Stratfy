@@ -18,6 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Views\Dashboards\Delete.cshtml" />
+    <Content Remove="Views\Extratos\Delete.cshtml" />
+    <Content Remove="Views\Extratos\Details.cshtml" />
     <Content Remove="wwwroot\css\StyleSheet.css" />
     <Content Remove="wwwroot\Images\Nome_Stratfy.png" />
   </ItemGroup>

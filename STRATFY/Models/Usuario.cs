@@ -15,6 +15,7 @@ public partial class Usuario
     [EmailAddress(ErrorMessage = "Informe um Email válido")]
     public string? Email { get; set; }
 
+    [StringLength(100, MinimumLength = 6, ErrorMessage = "A senha deve ter entre 6 e 100 caracteres.")]
     [Required(ErrorMessage = "O campo Senha é obrigatório")]
     [DataType(DataType.Password)]
     public string? Senha { get; set; }
