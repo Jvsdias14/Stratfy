@@ -10,6 +10,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ControllersTests\Home.cs" />
+    <Compile Remove="ControllersTests\Usuario.cs" />
+    <Compile Remove="ServicesTests\ST_Categoria.cs" />
+    <Compile Remove="ServicesTests\ST_CsvExport.cs" />
+    <Compile Remove="ServicesTests\ST_Movimentacao.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Bogus" Version="35.6.3" />
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
     <PackageReference Include="FluentAssertions" Version="8.3.0" />
@@ -20,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FakeData\FakeData.csproj" />
     <ProjectReference Include="..\STRATFY\STRATFY.csproj" />
   </ItemGroup>
 

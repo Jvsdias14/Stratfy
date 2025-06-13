@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
 import pandas as pd
-import pdfplumber
 import re
 from flask_cors import CORS
 import traceback
@@ -70,85 +69,6 @@ def ler_csv(file):
         df = pd.read_csv(file, sep=None, engine='python', encoding='latin1')
     return df
 
-def ler_pdf(file):
-    texto = ""
-    with pdfplumber.open(file) as pdf:
-        for pagina in pdf.pages:
-            texto += pagina.extract_text() + "\n"
-
-    linhas = texto.strip().split("\n")
-    dados = []
-    max_colunas = 0
-
-    for linha in linhas:
-        partes = re.split(r'\s{2,}', linha.strip())
-        if isinstance(partes, list) and all(isinstance(p, str) for p in partes):
-            if partes:
-                dados.append(partes)
-                max_colunas = max(max_colunas, len(partes))
-
-    if not dados:
-        return pd.DataFrame()
-
-    potenciais_cabecalhos = dados[:5]
-    cabecalho_encontrado_linha = -1
-    colunas_detectadas_conteudo = {}
-    colunas_indices = {}
-
-    for num_linha, linha in enumerate(potenciais_cabecalhos):
-        print(f"Tipo da linha {num_linha}: {type(linha)}")
-        if isinstance(linha, list):
-            for i, item in enumerate(linha):
-                print(f"  Tipo do item {i}: {type(item)}, Valor: '{item}'")
-            possivel_cabecalho = [str(item).lower().strip() for item in linha] # Inicializa aqui
-            colunas_detectadas_linha = {}
-            indices_usados_linha = set()
-
-            for chave, lista_sinonimos in sinonimos_colunas.items():
-                for sinonimo in lista_sinonimos:
-                    for i, coluna in enumerate(possivel_cabecalho):
-                        if i not in indices_usados_linha and sinonimo in coluna:
-                            colunas_detectadas_linha[chave] = i
-                            indices_usados_linha.add(i)
-                            break
-                    if chave in colunas_detectadas_linha:
-                        break
-
-            if len(colunas_detectadas_linha) >= 3 and 'descricao' in colunas_detectadas_linha and 'valor' in colunas_detectadas_linha and 'data' in colunas_detectadas_linha:
-                cabecalho_encontrado_linha = num_linha
-                colunas_detectadas_conteudo = colunas_detectadas_linha
-                colunas_indices = {v: k for k, v in colunas_detectadas_conteudo.items()}
-                break
-        else:
-            print(f"  Valor da linha (não é lista): '{linha}'")
-            continue # Se a linha não for uma lista, simplesmente vá para a próxima iteração
-
-    if cabecalho_encontrado_linha != -1:
-        dados_tabela = []
-        if len(dados) > cabecalho_encontrado_linha + 1:
-            num_cols_esperadas = len(colunas_indices)
-            for linha_dados in dados[cabecalho_encontrado_linha + 1:]:
-                nova_linha = {}
-                if isinstance(linha_dados, list) and len(linha_dados) >= num_cols_esperadas:
-                    for indice, chave in colunas_indices.items():
-                        nova_linha[chave] = linha_dados[indice]
-                    dados_tabela.append(nova_linha)
-                elif isinstance(linha_dados, list) and linha_dados:
-                    linha_preenchida = linha_dados + [None] * (num_cols_esperadas - len(linha_dados))
-                    for indice, chave in colunas_indices.items():
-                        if indice < len(linha_preenchida):
-                            nova_linha[chave] = linha_preenchida[indice]
-                        else:
-                            nova_linha[chave] = None
-                    dados_tabela.append(nova_linha)
-            df = pd.DataFrame(dados_tabela)
-        else:
-            df = pd.DataFrame()
-    else:
-        df = pd.DataFrame(dados)
-
-    return df
-
 @app.route('/api/uploadcsv', methods=['POST'])
 def processar_csv():
     if 'file' not in request.files:
@@ -158,12 +78,8 @@ def processar_csv():
     if file.filename == '':
         return jsonify({'erro': 'Arquivo vazio'}), 400
 
-    try:
-        filename = file.filename.lower()
-        if filename.endswith(".pdf"):
-            df = ler_pdf(file)
-        else:
-            df = ler_csv(file)
+    try:  
+        df = ler_csv(file)
 
         if df.empty:
             return jsonify({'erro': 'Nenhum dado encontrado no arquivo'}), 400

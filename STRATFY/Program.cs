@@ -38,12 +38,6 @@ builder.Services.AddScoped<IRepositoryUsuario, RepositoryUsuario>(); // << Novo 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>(); // Essencial para HttpContext
 
 
-builder.Services.AddScoped<RepositoryLogin>();
-builder.Services.AddScoped<RepositoryUsuario>();
-builder.Services.AddScoped<RepositoryExtrato>();
-builder.Services.AddScoped<RepositoryMovimentacao>();
-builder.Services.AddScoped<RepositoryDashboard>();
-
 builder.Services.AddScoped<IRepositoryUsuario, RepositoryUsuario>();
 builder.Services.AddScoped<IRepositoryExtrato, RepositoryExtrato>();
 builder.Services.AddScoped<IRepositoryDashboard, RepositoryDashboard>();

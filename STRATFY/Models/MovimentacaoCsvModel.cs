@@ -11,7 +11,7 @@ namespace STRATFY.Models // Ajuste o namespace se necessário
         public string Descricao { get; set; }
 
         [Name("Valor")]
-        public decimal Valor { get; set; }
+        public string Valor { get; set; }
 
         [Name("Tipo")]
         public string Tipo { get; set; }

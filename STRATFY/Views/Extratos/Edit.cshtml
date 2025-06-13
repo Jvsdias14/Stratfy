@@ -2,14 +2,16 @@
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 
 @{
     ViewData["Title"] = "Editar Extrato";
     var categorias = ViewData["CategoriaId"] as SelectList;
+
+    // A lista de tipos permanece aqui, mas a primeira opção com value="" é adicionada diretamente no HTML.
     var tipos = new List<SelectListItem>
     {
-        new SelectListItem { Value = "Selecione o tipo", Text = "Selecione o tipo" },
         new SelectListItem { Value = "Débito", Text = "Débito" },
         new SelectListItem { Value = "Crédito", Text = "Crédito" },
         new SelectListItem { Value = "Dinheiro", Text = "Dinheiro" },
@@ -32,7 +34,6 @@
 
             <h4 class="text-center">Movimentações</h4>
 
-            <!-- Busca e filtros -->
             <div class="row mb-3 align-items-center">
                 <div class="col-md-4">
                     <input type="text" id="searchInput" class="form-control rounded-3" placeholder="Buscar movimentações..." />
@@ -56,14 +57,15 @@
                     <datalist id="categorias-lista">
                         @foreach (var categoria in categorias)
                         {
-                            <option value="@categoria.Text"></option>
+                            <option value="@categoria.Text.Trim()"></option> @* Adicionado .Trim() aqui para a datalist *@
                         }
                     </datalist>
 
                     <thead class="table-light">
                         <tr>
                             <th>Descrição</th>
-                            <th>Valor
+                            <th>
+                                Valor
                                 <i class="bi bi-info-circle" data-bs-toggle="tooltip" data-bs-placement="top"
                                    title="Use valores positivos para entradas e negativos (-) para saídas de dinheiro"></i>
                             </th>
@@ -83,9 +85,10 @@
                                 <td><input class="form-control rounded-3 searchable-field" name="Movimentacoes[@i].Descricao" value="@Model.Movimentacoes[i].Descricao" /></td>
                                 <td>
                                     <input class="form-control rounded-3" name="Movimentacoes[@i].Valor" value="@Model.Movimentacoes[i].Valor" />
-                                    </td>
+                                </td>
                                 <td>
                                     <select name="Movimentacoes[@i].Tipo" class="form-control rounded-3 tipo-field">
+                                        <option value="">Selecione o tipo</option> @* Opção padrão com valor vazio *@
                                         @foreach (var item in tipos)
                                         {
                                             <option value="@item.Value" selected="@(item.Value == Model.Movimentacoes[i].Tipo)">
@@ -96,14 +99,20 @@
                                 </td>
                                 <td>
                                     <select name="Movimentacoes[@i].Categoria.Id" class="form-control rounded-3 categoria-select">
-                                        <option value="">Selecione a Categoria</option>
+                                        <option value="">Selecione a Categoria</option> @* Opção padrão com valor vazio *@
                                         @foreach (var categoria in categorias)
                                         {
-                                            <option value="@categoria.Value" selected="@(categoria.Value == Model.Movimentacoes[i].Categoria.Id.ToString())">
+                                            <option value="@categoria.Value" selected="@(categoria.Value == Model.Movimentacoes[i].Categoria?.Id.ToString())">
                                                 @categoria.Text
                                             </option>
                                         }
                                     </select>
+                                    @* O Categoria.Nome é enviado apenas como um campo oculto para referência,
+                                não é usado para criar novas categorias no back-end.
+                                Ele é preenchido via JavaScript na seleção do dropdown. *@
+                                    <input type="hidden" name="Movimentacoes[@i].Categoria.Nome"
+                                           value="@(Model.Movimentacoes[i].Categoria?.Nome?.Trim())" @* Adicionado .Trim() aqui para o valor inicial *@
+                                           class="categoria-nome-hidden" />
                                 </td>
 
                                 <td>
@@ -118,7 +127,6 @@
                     </tbody>
                 </table>
 
-                <!-- Paginação -->
                 <div class="d-flex justify-content-between align-items-center mt-3">
                     <div>
                         <span id="info-paginacao">Exibindo <span id="inicio-registros">1</span>-<span id="fim-registros">10</span> de <span id="total-registros">0</span> registros</span>
@@ -146,7 +154,6 @@
                                     </a>
                                 </li>
                                 <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                <!-- Páginas dinâmicas serão adicionadas via JavaScript -->
                                 <li class="page-item" id="btn-proxima">
                                     <a class="page-link" href="#" aria-label="Próxima">
                                         <span aria-hidden="true">&raquo;</span>
@@ -173,10 +180,14 @@
 
 @section Scripts {
     <script>
+        // Carrega as categorias do banco de dados para uso no JavaScript
+        // **IMPORTANTE**: Use .Trim() aqui para garantir que os nomes da categoria não tenham espaços extras
         let categoriasDoBanco = [
         @foreach (var item in categorias)
         {
-            <text>{ value: "@item.Value", text: "@item.Text" }, </text>
+            // Garantimos que o 'text' esteja trimado ao ser passado para o JS.
+            <text>{ value: "@item.Value", text: "@item.Text.Trim()" }, </text>
+            // <--- Adicionado .Trim() aqui
         }
                 ];
         // Variáveis de controle da paginação
@@ -185,33 +196,40 @@
         let totalPaginas = 1;
         let indice = 0; // Será inicializado com o valor correto no ready
 
-        $(document).ready(function() {
+        $(document).ready(function () {
             // Inicializar o contador com o número atual de linhas
             indice = $('.movimentacao-row').length;
+
+            // Inicializar tooltips do Bootstrap
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+
 
             // Configurar a paginação inicial
             atualizarPaginacao();
 
             // Eventos de paginação
-            $("#registrosPorPagina").change(function() {
+            $("#registrosPorPagina").change(function () {
                 registrosPorPagina = parseInt($(this).val());
                 paginaAtual = 1; // Voltar para a primeira página
                 atualizarPaginacao();
             });
 
             // Eventos de busca e filtro
-            $("#searchInput").on("keyup", function() {
+            $("#searchInput").on("keyup", function () {
                 paginaAtual = 1; // Voltar para a primeira página ao buscar
                 atualizarPaginacao();
             });
 
-            $("#filterTipo").change(function() {
+            $("#filterTipo").change(function () {
                 paginaAtual = 1; // Voltar para a primeira página ao filtrar
                 atualizarPaginacao();
             });
 
             // Eventos de navegação
-            $("#btn-primeira").click(function(e) {
+            $("#btn-primeira").click(function (e) {
                 e.preventDefault();
                 if (!$(this).hasClass("disabled")) {
                     paginaAtual = 1;
@@ -219,7 +237,7 @@
                 }
             });
 
-            $("#btn-anterior").click(function(e) {
+            $("#btn-anterior").click(function (e) {
                 e.preventDefault();
                 if (!$(this).hasClass("disabled")) {
                     paginaAtual--;
@@ -227,7 +245,7 @@
                 }
             });
 
-            $("#btn-proxima").click(function(e) {
+            $("#btn-proxima").click(function (e) {
                 e.preventDefault();
                 if (!$(this).hasClass("disabled")) {
                     paginaAtual++;
@@ -235,13 +253,27 @@
                 }
             });
 
-            $("#btn-ultima").click(function(e) {
+            $("#btn-ultima").click(function (e) {
                 e.preventDefault();
                 if (!$(this).hasClass("disabled")) {
                     paginaAtual = totalPaginas;
                     atualizarPaginacao();
                 }
             });
+
+            // Adicionar listener para os selects de categoria (delegação de evento)
+            // Isso garante que o hidden field seja preenchido com o nome da categoria
+            // ao carregar a página e sempre que um select existente ou novo é alterado.
+            $(document).on('change', '.categoria-select', function () {
+                // **CORREÇÃO PRINCIPAL AQUI**: Adicionado .trim() no texto selecionado.
+                const selectedText = $(this).find('option:selected').text().trim(); // <--- Adicionado .trim() aqui
+                // Encontra o input hidden dentro da mesma célula (td)
+                $(this).closest('td').find('.categoria-nome-hidden').val(selectedText);
+            });
+
+            // Chamar o change para preencher os valores iniciais (se já houver movimentações)
+            // Isso garante que o hidden field já tenha o valor trimado ao carregar a página.
+            $('.categoria-select').trigger('change');
         });
 
         // Função para remover linha
@@ -255,8 +287,8 @@
         // Função para reindexar os campos do formulário
         function reindexarTabela() {
             const linhas = $('.movimentacao-row');
-            linhas.each(function(index) {
-                $(this).find('input, select').each(function() {
+            linhas.each(function (index) {
+                $(this).find('input, select').each(function () {
                     const name = $(this).attr('name');
                     if (name) {
                         const novoName = name.replace(/Movimentacoes\[\d+\]/, `Movimentacoes[${index}]`);
@@ -277,40 +309,43 @@
             // Construir as opções de categoria
             let optionsHtml = '<option value="">Selecione a Categoria</option>';
             categoriasDoBanco.forEach(categoria => {
+                // O .Trim() já foi aplicado na criação de categoriasDoBanco, mas é bom sempre lembrar que o dado deve estar limpo
                 optionsHtml += `<option value="${categoria.value}">${categoria.text}</option>`;
             });
 
-            // Construir as opções de tipo
+            // Construir as opções de tipo (ajustado para ter uma opção inicial vazia)
             let tiposHtml = `
-                <option value="Selecione o tipo">Selecione o tipo</option>
-                <option value="Débito">Débito</option>
-                <option value="Crédito">Crédito</option>
-                <option value="Dinheiro">Dinheiro</option>
-                <option value="Pix">Pix</option>
-            `;
+                                        <option value="">Selecione o tipo</option>
+                                        <option value="Débito">Débito</option>
+                                        <option value="Crédito">Crédito</option>
+                                        <option value="Dinheiro">Dinheiro</option>
+                                        <option value="Pix">Pix</option>
+                                    `;
 
             const novaLinha = `
-                <tr class="movimentacao-row">
-                    <input type="hidden" name="Movimentacoes[${indice}].Id" value="0" />
-                    <input type="hidden" name="Movimentacoes[${indice}].ExtratoId" value="${extratoId}" />
-                    <td><input class="form-control rounded-3 searchable-field" name="Movimentacoes[${indice}].Descricao" /></td>
-                    <td><input class="form-control rounded-3" name="Movimentacoes[${indice}].Valor" /></td>
-                    <td>
-                        <select class="form-control rounded-3 tipo-field" name="Movimentacoes[${indice}].Tipo">
-                            ${tiposHtml}
-                        </select>
-                    </td>
-                    <td>
-                        <select class="form-control rounded-3 categoria-select" name="Movimentacoes[${indice}].Categoria.Id">
-                            ${optionsHtml}
-                        </select>
-                    </td>
-                    <td><input class="form-control rounded-3" type="date" name="Movimentacoes[${indice}].DataMovimentacao" /></td>
-                    <td><button type="button" class="btn btn-outline-danger btn-sm" onclick="removerLinha(this)">Remover</button></td>
-                </tr>
-            `;
+                                        <tr class="movimentacao-row">
+                                            <input type="hidden" name="Movimentacoes[${indice}].Id" value="0" />
+                                            <input type="hidden" name="Movimentacoes[${indice}].ExtratoId" value="${extratoId}" />
+                                            <td><input class="form-control rounded-3 searchable-field" name="Movimentacoes[${indice}].Descricao" /></td>
+                                            <td><input class="form-control rounded-3" name="Movimentacoes[${indice}].Valor" /></td>
+                                            <td>
+                                                <select class="form-control rounded-3 tipo-field" name="Movimentacoes[${indice}].Tipo">
+                                                    ${tiposHtml}
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <select class="form-control rounded-3 categoria-select" name="Movimentacoes[${indice}].Categoria.Id">
+                                                    ${optionsHtml}
+                                                </select>
+                                                <input type="hidden" name="Movimentacoes[${indice}].Categoria.Nome" class="categoria-nome-hidden" value="" /> @* Valor inicial vazio para novas linhas *@
+                                            </td>
+                                            <td><input class="form-control rounded-3" type="date" name="Movimentacoes[${indice}].DataMovimentacao" value="${new Date().toISOString().slice(0, 10)}" /></td>
+                                            <td><button type="button" class="btn btn-outline-danger btn-sm" onclick="removerLinha(this)">Remover</button></td>
+                                        </tr>
+                                    `;
 
             tbody.append(novaLinha);
+
             indice++;
             totalPaginas = Math.ceil($('.movimentacao-row').length / registrosPorPagina);
             paginaAtual = totalPaginas;
@@ -318,116 +353,96 @@
             tbody.find('tr:last-child td:first-child input').focus();
         }
 
-        // Função para atualizar a paginação
+        // Funções de paginação e filtro (atualizadas para usar o Trim no termo de busca)
         function atualizarPaginacao() {
-            // Aplicar filtros para determinar quais linhas devem ser visíveis
             aplicarFiltros();
-
-            // Obter todas as linhas que passaram pelos filtros
             const linhasFiltradas = $(".movimentacao-row.filtrado");
             const totalRegistros = linhasFiltradas.length;
 
-            // Calcular total de páginas
             totalPaginas = Math.ceil(totalRegistros / registrosPorPagina);
             if (totalPaginas === 0) totalPaginas = 1;
 
-            // Ajustar página atual se necessário
             if (paginaAtual > totalPaginas) {
                 paginaAtual = totalPaginas;
+            } else if (paginaAtual < 1 && totalRegistros > 0) {
+                paginaAtual = 1;
             }
 
-            // Esconder todas as linhas primeiro
             $(".movimentacao-row").hide();
 
-            // Mostrar apenas as linhas filtradas da página atual
             const inicio = (paginaAtual - 1) * registrosPorPagina;
             const fim = inicio + registrosPorPagina;
 
             linhasFiltradas.slice(inicio, fim).show();
 
-            // Atualizar informações de paginação
             $("#total-registros").text(totalRegistros);
             $("#inicio-registros").text(totalRegistros > 0 ? inicio + 1 : 0);
             $("#fim-registros").text(Math.min(fim, totalRegistros));
 
-            // Atualizar estado dos botões de navegação
             $("#btn-primeira, #btn-anterior").toggleClass("disabled", paginaAtual === 1);
             $("#btn-proxima, #btn-ultima").toggleClass("disabled", paginaAtual === totalPaginas);
 
-            // Atualizar números de página
             atualizarNumerosPagina();
         }
 
-        // Função para aplicar filtros e marcar linhas filtradas
         function aplicarFiltros() {
-            const termoBusca = $("#searchInput").val().toLowerCase();
+            const termoBusca = $("#searchInput").val().toLowerCase().trim(); // <-- Adicionado .trim() aqui
             const tipoFiltro = $("#filterTipo").val();
 
-            // Remover classe de filtro anterior
             $(".movimentacao-row").removeClass("filtrado");
 
-            // Aplicar filtros
-            $(".movimentacao-row").each(function() {
+            $(".movimentacao-row").each(function () {
                 const linha = $(this);
                 let mostrar = true;
 
-                // Aplicar filtro de busca
                 if (termoBusca) {
-                    const textoLinha = linha.find(".searchable-field").map(function() {
-                        return $(this).val() ? $(this).val().toLowerCase() : "";
-                    }).get().join(" ");
+                    const descricao = linha.find('input[name$="Descricao"]').val().toLowerCase();
+                    // Garanta que o nome da categoria vindo do hidden field também seja trimado para a busca
+                    const categoriaNome = linha.find('.categoria-nome-hidden').val() ? linha.find('.categoria-nome-hidden').val().toLowerCase().trim() : ''; // <--- Adicionado .trim() aqui e verificação de null
+                    const valor = linha.find('input[name$="Valor"]').val().toLowerCase();
+                    const data = linha.find('input[name$="DataMovimentacao"]').val().toLowerCase();
 
-                    if (!textoLinha.includes(termoBusca)) {
+                    if (!(descricao.includes(termoBusca) || categoriaNome.includes(termoBusca) || valor.includes(termoBusca) || data.includes(termoBusca))) {
                         mostrar = false;
                     }
                 }
 
-                // Aplicar filtro por tipo
                 if (tipoFiltro && mostrar) {
                     const tipoValor = linha.find(".tipo-field").val();
-
                     if (tipoValor !== tipoFiltro) {
                         mostrar = false;
                     }
                 }
 
-                // Marcar linha como filtrada se passou pelos filtros
                 if (mostrar) {
                     linha.addClass("filtrado");
                 }
             });
         }
 
-        // Função para atualizar os números de páginas na paginação
         function atualizarNumerosPagina() {
-            // Remover páginas existentes, exceto os botões de navegação
             $(".page-item:not(#btn-primeira):not(#btn-anterior):not(#btn-proxima):not(#btn-ultima)").remove();
 
-            // Se tiver apenas uma página, mostrar só ela
             if (totalPaginas <= 1) {
                 const pageItem = $(`<li class="page-item active"><a class="page-link" href="#">1</a></li>`);
                 pageItem.insertBefore($("#btn-proxima"));
                 return;
             }
 
-            // Determinar quantas páginas mostrar (máximo 5)
             let inicioRange = Math.max(1, paginaAtual - 2);
             let fimRange = Math.min(totalPaginas, inicioRange + 4);
 
-            // Ajustar para sempre mostrar 5 páginas quando possível
             if (fimRange - inicioRange < 4 && totalPaginas > 4) {
                 inicioRange = Math.max(1, fimRange - 4);
             }
 
-            // Inserir antes do botão próxima
             for (let i = inicioRange; i <= fimRange; i++) {
                 const active = i === paginaAtual ? "active" : "";
                 const pageItem = $(`<li class="page-item ${active}"><a class="page-link" href="#">${i}</a></li>`);
 
                 pageItem.insertBefore($("#btn-proxima"));
 
-                // Adicionar evento de clique
-                pageItem.click(function(e) {
+                pageItem.click(function (e) {
                     e.preventDefault();
                     paginaAtual = i;
                     atualizarPaginacao();
@@ -435,173 +450,98 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
-            // Configurar todos os seletores de categoria
-            document.querySelectorAll('.categoria-input').forEach(input => {
-                const container = input.closest('.categoria-select-container');
-                const dropdown = container.querySelector('.categoria-dropdown');
-                const options = Array.from(dropdown.querySelectorAll('.categoria-option'));
+        // Funções de validação de formulário (mantidas as validações atuais)
+        function validarFormulario() {
+            let isValido = true;
+            let mensagensErro = [];
 
-                // Função para mostrar o dropdown
-                function showDropdown() {
-                    dropdown.classList.add('show');
+            $(".alert-validation").remove();
+
+            $('.movimentacao-row').each(function (index) {
+                const row = $(this);
+                const descricaoInput = row.find('input[name$="Descricao"]');
+                const valorInput = row.find('input[name$="Valor"]');
+                const tipoSelect = row.find('select[name$="Tipo"]');
+                const categoriaIdSelect = row.find('select[name$="Categoria.Id"]');
+                const categoriaNomeHidden = row.find('input[name$="Categoria.Nome"]');
+                const dataInput = row.find('input[name$="DataMovimentacao"]');
+
+                const descricao = descricaoInput.val();
+                const valor = valorInput.val();
+                const tipo = tipoSelect.val();
+                const categoriaId = categoriaIdSelect.val();
+                const categoriaNome = categoriaNomeHidden.val(); // <--- O valor aqui já virá trimado do change event
+                const data = dataInput.val();
+
+                let linhaTemErro = false;
+
+                descricaoInput.removeClass('is-invalid');
+                valorInput.removeClass('is-invalid');
+                tipoSelect.removeClass('is-invalid');
+                categoriaIdSelect.removeClass('is-invalid');
+                dataInput.removeClass('is-invalid');
+
+                if (!descricao || descricao.trim() === '') {
+                    isValido = false;
+                    linhaTemErro = true;
+                    descricaoInput.addClass('is-invalid');
+                    mensagensErro.push(`Linha ${index + 1}: Descrição é obrigatória.`);
                 }
 
-                // Função para esconder o dropdown
-                function hideDropdown() {
-                    // Pequeno atraso para permitir a seleção de opções
-                    setTimeout(() => {
-                        dropdown.classList.remove('show');
-                    }, 150);
+                const parsedValor = parseFloat(valor.replace(',', '.'));
+                if (!valor || valor.trim() === '' || isNaN(parsedValor)) {
+                    isValido = false;
+                    linhaTemErro = true;
+                    valorInput.addClass('is-invalid');
+                    mensagensErro.push(`Linha ${index + 1}: Valor é obrigatório e deve ser um número.`);
                 }
 
-                // Função para filtrar opções
-                function filterOptions() {
-                    const filterValue = input.value.toLowerCase();
-                    let hasVisibleOptions = false;
-
-                    options.forEach(option => {
-                        const text = option.textContent.toLowerCase();
-                        if (text.includes(filterValue)) {
-                            option.style.display = 'block';
-                            hasVisibleOptions = true;
-                        } else {
-                            option.style.display = 'none';
-                        }
-                    });
-
-                    return hasVisibleOptions;
+                if (!tipo || tipo === '' || tipo === 'Selecione o tipo') {
+                    isValido = false;
+                    linhaTemErro = true;
+                    tipoSelect.addClass('is-invalid');
+                    mensagensErro.push(`Linha ${index + 1}: Tipo é obrigatório.`);
                 }
 
-                // Evento de foco no input
-                input.addEventListener('focus', () => {
-                    showDropdown();
-                    filterOptions();
-                });
+                // A validação agora confia que categoriaNomeHidden.val() já está trimado.
+                // Mas, por segurança, podemos colocar o .trim() aqui também.
+                if (!categoriaId || categoriaId === '' || !categoriaNome || categoriaNome.trim() === '') { // <--- Adicionado .trim() aqui para segurança
+                    isValido = false;
+                    linhaTemErro = true;
+                    categoriaIdSelect.addClass('is-invalid');
+                    mensagensErro.push(`Linha ${index + 1}: Categoria é obrigatória e deve ser selecionada.`);
+                }
 
-                // Evento de perda de foco
-                input.addEventListener('blur', hideDropdown);
+                if (!data || data.trim() === '') {
+                    isValido = false;
+                    linhaTemErro = true;
+                    dataInput.addClass('is-invalid');
+                    mensagensErro.push(`Linha ${index + 1}: Data é obrigatória.`);
+                }
 
-                // Evento de digitação
-                input.addEventListener('input', filterOptions);
-
-                // Clique em uma opção
-                options.forEach(option => {
-                    option.addEventListener('mousedown', (e) => {
-                        // Evitar fechamento do dropdown pelo evento blur
-                        e.preventDefault();
-                        input.value = option.textContent;
-                        hideDropdown();
-                    });
-                });
-
-                // Navegação com teclado
-                input.addEventListener('keydown', (e) => {
-                    const visibleOptions = options.filter(opt => opt.style.display !== 'none');
-                    let currentIndex = visibleOptions.findIndex(opt => opt.classList.contains('highlight'));
-
-                    if (e.key === 'ArrowDown') {
-                        e.preventDefault();
-                        if (currentIndex < visibleOptions.length - 1) {
-                            if (currentIndex >= 0) visibleOptions[currentIndex].classList.remove('highlight');
-                            visibleOptions[currentIndex + 1].classList.add('highlight');
-                        } else if (currentIndex === -1 && visibleOptions.length > 0) {
-                            visibleOptions[0].classList.add('highlight');
-                        }
-                    } else if (e.key === 'ArrowUp') {
-                        e.preventDefault();
-                        if (currentIndex > 0) {
-                            visibleOptions[currentIndex].classList.remove('highlight');
-                            visibleOptions[currentIndex - 1].classList.add('highlight');
-                        }
-                    } else if (e.key === 'Enter' && currentIndex >= 0) {
-                        e.preventDefault();
-                        input.value = visibleOptions[currentIndex].textContent;
-                        hideDropdown();
-                    } else if (e.key === 'Escape') {
-                        e.preventDefault();
-                        hideDropdown();
-                    }
-                });
+                if (linhaTemErro) {
+                    row.show();
+                }
             });
 
-            function validarFormulario() {
-                let isValido = true;
-                let mensagensErro = [];
+            if (!isValido) {
+                const alertHtml = `
+                                        <div class="alert alert-danger alert-validation alert-dismissible fade show mt-3" role="alert">
+                                            <strong>Atenção!</strong> Por favor, corrija os seguintes erros:
+                                            <ul>
+                                                ${mensagensErro.map(msg => `<li>${msg}</li>`).join('')}
+                                            </ul>
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                        </div>
+                                    `;
 
-                // Remover alertas anteriores
-                $(".alert-validation").remove();
-
-                // Validar cada linha de movimentação
-                $('.movimentacao-row:not(.d-none)').each(function (index) {
-                    const row = $(this);
-                    const descricao = row.find('input[name$="Descricao"]').val();
-                    const valor = row.find('input[name$="Valor"]').val();
-                    const tipo = row.find('select[name$="Tipo"]').val();
-                    const categoria = row.find('select[name$="Categoria.Id"]').val();
-                    const data = row.find('input[name$="DataMovimentacao"]').val();
-
-                    // Validar campos obrigatórios
-                    if (!descricao || descricao.trim() === '') {
-                        isValido = false;
-                        row.find('input[name$="Descricao"]').addClass('is-invalid');
-                        mensagensErro.push(`Linha ${index + 1}: Descrição é obrigatória`);
-                    } else {
-                        row.find('input[name$="Descricao"]').removeClass('is-invalid');
-                    }
-
-                    if (!valor || valor.trim() === '') {
-                        isValido = false;
-                        row.find('input[name$="Valor"]').addClass('is-invalid');
-                        mensagensErro.push(`Linha ${index + 1}: Valor é obrigatório`);
-                    } else {
-                        row.find('input[name$="Valor"]').removeClass('is-invalid');
-                    }
-
-                    if (!tipo || tipo === 'Selecione o tipo') {
-                        isValido = false;
-                        row.find('select[name$="Tipo"]').addClass('is-invalid');
-                        mensagensErro.push(`Linha ${index + 1}: Tipo é obrigatório`);
-                    } else {
-                        row.find('select[name$="Tipo"]').removeClass('is-invalid');
-                    }
-
-                    if (!categoria || categoria === '') {
-                        isValido = false;
-                        row.find('select[name$="Categoria.Id"]').addClass('is-invalid');
-                        mensagensErro.push(`Linha ${index + 1}: Categoria é obrigatória`);
-                    } else {
-                        row.find('select[name$="Categoria.Id"]').removeClass('is-invalid');
-                    }
-
-                    if (!data || data.trim() === '') {
-                        isValido = false;
-                        row.find('input[name$="DataMovimentacao"]').addClass('is-invalid');
-                        mensagensErro.push(`Linha ${index + 1}: Data é obrigatória`);
-                    } else {
-                        row.find('input[name$="DataMovimentacao"]').removeClass('is-invalid');
-                    }
-                });
-
-                // Se houver erros, mostrar alerta
-                if (!isValido) {
-                    const alertHtml = `
-                <div class="alert alert-danger alert-validation alert-dismissible fade show mt-3" role="alert">
-                    <strong>Atenção!</strong> Por favor, corrija os seguintes erros:
-                    <ul>
-                        ${mensagensErro.map(msg => `<li>${msg}</li>`).join('')}
-                    </ul>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                `;
-
-                    // Usar um seletor específico para o container do formulário principal
-                    $('.editar_extrato form').prepend(alertHtml);
-                    $('html, body').animate({ scrollTop: 0 }, 'slow');
-                }
-
-                return isValido;
+                $('.editar_extrato form').prepend(alertHtml);
+                $('html, body').animate({ scrollTop: 0 }, 'slow');
             }
+
+            return isValido;
+        }
+
         $('form').on('submit', function (event) {
             if (!validarFormulario()) {
                 event.preventDefault();
@@ -610,6 +550,5 @@
             return true;
         });
 
-        });
     </script>
 }

@@ -46,7 +46,7 @@ namespace STRATFY.Services
 
         public async Task<Usuario> CriarUsuarioAsync(Usuario usuario, string senha)
         {
-            if (string.IsNullOrEmpty(senha))
+            if (string.IsNullOrWhiteSpace(senha))
             {
                 throw new ArgumentException("A senha é obrigatória.");
             }

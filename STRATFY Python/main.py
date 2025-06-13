@@ -10,5 +10,5 @@ def run_streamlit():
 
 if __name__ == "__main__":
     threading.Thread(target=run_flask).start()
-    time.sleep(2)  # Aguarda o Flask subir
+    time.sleep(2)  
     run_streamlit()
