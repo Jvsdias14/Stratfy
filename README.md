@@ -93,7 +93,7 @@ O Stratfy é composto por duas partes principais (Python e C#) que precisam ser 
 
 1.  **Verifique se você está no diretório correto:** O arquivo principal é `main.py` dentro de `STRATFY\STRATFY Python`.
     ```
-    cd STRATFY\STRATFY Python
+    cd '.\STRATFY\STRATFY Python\'
     ```
 2.  **Execute o servidor Python:**
     ```
